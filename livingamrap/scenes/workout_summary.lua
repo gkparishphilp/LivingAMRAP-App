@@ -14,6 +14,7 @@ local Theme = require( 'ui.theme' )
 local UI = require( 'ui.factory' )
 local Clock = require( 'objects.clock' )
 local json = require( 'json' )
+local FileUtils = require( "utilities.file" )
 
 local Debug = require( 'utilities.debug' )
 
@@ -44,7 +45,15 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+
+		local all_results = FileUtils.loadTable( "all_results.json" )
+		-- have to initialize settings in case file doesn't exist
+		all_results = all_results or {}
+
 		results = Composer.getVariable( 'workoutResults' )
+
+		table.insert( all_results, results )
+		FileUtils.saveTable( all_results, "all_results.json" )
 
 		-- print( "here are your results... " )
 		-- Debug.printTable( results )

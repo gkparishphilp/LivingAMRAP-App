@@ -1,6 +1,7 @@
 
 
 -- add a small end-workout button -- user may not want to micro-manage rounds
+  -- put in menu?
 -- fix results table (add rounds/reps)
 -- add notes & rx to results
 -- update font size in segment display?
@@ -174,31 +175,47 @@ function M:new( opts )
 		timer.performWithDelay( 1250, function() Composer.gotoScene( 'scenes.workout_summary' ) end )
 	end
 
-	function workout:advanceSegment()
+	function workout:advanceSegment( btn )
 		
 		-- Can't double-click protect this cause it's called by code
-		-- if workout.lastActionTime and ( workout.clock.elapsedTime - workout.lastActionTime < 1000 ) then 
-		-- 	--native.showAlert( 'Double Click', "That's too fast", { 'Ok' } )
-		-- 	return false
-		-- end
-		-- workout.lastActionTime = workout.clock.elapsedTime
+		if btn then
+			if workout.lastActionTime and ( workout.clock.elapsedTime - workout.lastActionTime < 1000 ) then 
+				--native.showAlert( 'Double Click', "That's too fast", { 'Ok' } )
+				return false
+			end
+			workout.lastActionTime = workout.clock.elapsedTime
+		end
 
 		print( "advancing Segment" )
+
+		if workout.curSegment.segment_type == 'ft' then 
+			local formattedTime = string.format( "%02d", Clock.getMinutes( workout.segClock.elapsedTime ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( workout.segClock.elapsedTime ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( workout.segClock.elapsedTime ) )
+			workout.segTimeDisp = display.newText({
+				parent 	= workout,
+				text 	= formattedTime,
+				x 		= centerX ,
+				y 		= centerY,
+				--font 	= 'Lato-Black.ttf',
+				font 	= 'digital-7-mono.ttf',
+				fontSize = 1
+				})
+			workout.anims[#workout.anims+1] = transition.to( workout.segTimeDisp, { size=100, duration=1200, onComplete=function() transition.to( workout.segTimeDisp, { size=20, duration=1000, x=workout.segClock.minDisplay.x+workout.segClock.minDisplay.contentWidth, y=workout.segClock.minDisplay.y, onComplete=function() display.remove( workout.segTimeDisp ); end } ) end } )
+		end
+
+		table.insert( workout.results, { 
+			segment_id		= workout.curSegment.id,
+			segment_type 	= workout.curSegment.segment_type,
+			segment_content = workout.curSegment.content,
+			round 			= workout.roundCount,
+			total_rounds	= workout.totalRoundCount,
+			time 			= workout.clock.elapsedTime,
+			})
 
 		workout.curSegmentIdx = workout.curSegmentIdx + 1
 		
 		if workout.curSegmentIdx > #workout.data.segments then 
 			workout:finish()
 		else
-			table.insert( workout.results, { 
-				segment_id		= workout.curSegment.id,
-				segment_type 	= workout.curSegment.segment_type,
-				segment_content = workout.curSegment.content,
-				round 			= workout.roundCount,
-				total_rounds	= workout.totalRoundCount,
-				time 			= workout.clock.elapsedTime,
-				})
-
 			workout.curSegment = workout.data.segments[workout.curSegmentIdx]
 
 			workout.roundCount = 0
@@ -208,7 +225,11 @@ function M:new( opts )
 			if workout.curSegment.segment_type == 'rest' then 
 				workout.actionBtn.label.text = 'Resting'
 				workout.actionBtn.onRelease = function() end
-				workout.roundDisp.isVisible = false
+				workout.roundDisp.text = "Resting"
+			elseif workout.curSegment.segment_type == 'ft' then 
+				workout.actionBtn.label.text = 'Advance'
+				workout.actionBtn.onRelease = function() workout:advanceSegment( true ) end
+				workout.roundDisp.text = "For Time"
 
 			elseif workout.curSegment.segment_type == 'amrap' or workout.curSegment.segment_type == 'rft' then 
 				workout.actionBtn.label.text = 'Count Round'
@@ -353,6 +374,9 @@ function M:new( opts )
 				workout.roundDisp.preLabel = "Rounds: "
 				workout.roundDisp.postLabel = ""
 				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.roundCount
+			elseif workout.curSegment.segment_type == 'ft' then 
+				workout.roundDisp.isVisible = true
+				workout.roundDisp.text = 'For Time'
 			end
 
 			-- similar to primary clock, but we'll let segment clock run forever
@@ -383,19 +407,19 @@ function M:new( opts )
 			workout.sep = display.newLine( workout, 25, workout.segClock.y + 18, screenWidth-25, workout.segClock.y + 18 )
 			workout.sep.alpha = 0.5
 
-			workout.overview = display.newText({
-				parent 	= workout,
-				text 	= workout.data.overview_title,
-				width 	= screenWidth-20,
-				x 		= centerX,
-				y 		= workout.sep.y + 11,
-				font 	= 'Lato-Black.ttf',
-				fontSize 	= 25,
-				align 		= 'center'
-				})
-			workout.overview.anchorY = 0
+			-- workout.overview = display.newText({
+			-- 	parent 	= workout,
+			-- 	text 	= workout.data.overview_title,
+			-- 	width 	= screenWidth-20,
+			-- 	x 		= centerX,
+			-- 	y 		= workout.sep.y + 11,
+			-- 	font 	= 'Lato-Black.ttf',
+			-- 	fontSize 	= 25,
+			-- 	align 		= 'center'
+			-- 	})
+			-- workout.overview.anchorY = 0
 
-			workout.activeSegY =  workout.overview.y + workout.overview.contentHeight + 10
+			workout.activeSegY =  workout.sep.y + workout.sep.contentHeight + 40
 			local curY = workout.activeSegY
 
 			-- show all the segments in te middle
@@ -449,15 +473,15 @@ function M:new( opts )
 				workout.actionBtn.onRelease = function() workout:countRound() end
 			else
 				workout.actionBtn.label.text = 'Advance'
-				workout.actionBtn.onRelease = function() workout:advanceSegment() end
+				workout.actionBtn.onRelease = function() workout:advanceSegment( true ) end
 			end
 
 			workout.isVisible = false
 
 			-- now, we can make the count in a setting: 0, 3, 5, 10
-			workout.countInCount = 3
-			if settings.countIn then
-				timer.performWithDelay( 1000, countIn, workout.countInCount + 1 )
+			workout.countInCount = settings.countIn
+			if settings.countIn > 0 then
+				timer.performWithDelay( 1000, countIn, settings.countIn + 1 )
 			else
 				workout:start()
 			end

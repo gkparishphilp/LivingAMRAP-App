@@ -97,10 +97,10 @@ function scene:create( event )
 
 
 	ui.test_clock = Btn:new({
-		label			= 'Test Clock',
+		label			= 'View All Results',
 		y				= screenHeight - btnPad * 6,
 		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.test_clock" ) end
+		onRelease 		= function() Composer.gotoScene( "scenes.results" ) end
 	})
 
 	y = y + Theme.buttons.height + btnPad 

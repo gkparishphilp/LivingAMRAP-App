@@ -106,21 +106,37 @@ function M:setHeader( opts )
 	header.back_btn = Btn:new({
 		parent 			= header,
 		label 			= 'Back',
-		labelColor  	= opts.fontColor,
+		labelColor  	= { 0 } ,
 		bgColor 		= opts.btnColor,
-		width			= 60,
+		width			= 30,
 		height			= 30,
 		strokeWidth 	= 1,
-		x				= 40,
+		x				= 20,
 		y				= opts.height/2,
-		fontSize		= 14,
+		font 			= 'Lato.ttf',
+		fontSize		= 12,
 		onRelease 		= function() Composer.gotoScene( opts.backTo ) end
 	})
+
+	header.menu_btn = Btn:new({
+		parent 			= header,
+		imageIcon 		= '/assets/images/menu-icon.png',
+		labelColor  	= opts.fontColor,
+		bgColor 		= opts.btnColor,
+		width			= 30,
+		height			= 30,
+		strokeWidth 	= 1,
+		x				= screenWidth-20,
+		y				= opts.height/2,
+		fontSize		= 14,
+		onRelease 		= function() if Composer.getVariable( 'overlay' ) then Composer.hideOverlay( 'slideRight' ) else Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
+	})
+
 
 	header.title = display.newText({
 		parent 		= header, 
 		text 		= opts.title,
-		x 			= screenWidth - 10, 
+		x 			= screenWidth - 50, 
 		y 			= opts.height/2,
 		font 		= 'Lato-Bold.ttf',
 		fontSize 	= opts.fontSize 
