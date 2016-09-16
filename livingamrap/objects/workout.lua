@@ -5,8 +5,10 @@
 -- fix results table (add rounds/reps)
 -- add notes & rx to results
 -- update font size in segment display?
--- add emom mode
--- create a separate tabata module
+--   add active segment & next segment display
+-- major refactor: tabata & emom can't advance segment. 
+--   drive everything to segment
+
 -- add an accumulated time mode
 
 
@@ -67,8 +69,11 @@ function M:new( opts )
 	workout.results = {}
 	workout.anims = {}
 	workout.totalRoundCount = 0
+
+	-- ToDo: move these into segment
 	workout.roundCount = 0
 	workout.roundsToComplete = 0
+	
 
 
 	local function countIn()
@@ -139,6 +144,23 @@ function M:new( opts )
 		workout.anims[#workout.anims+1] = transition.to( workout.roundCountDisp, { size=500, duration=1200, onComplete=function() transition.to( workout.roundCountDisp, { size=20, duration=1000, x=workout.roundDisp.x+workout.roundDisp.contentWidth, y=workout.roundDisp.y, onComplete=function() display.remove( workout.roundCountDisp ); workout.roundDisp.text=workout.roundDisp.preLabel .. workout.roundCount .. workout.roundDisp.postLabel end } ) end } )
 	end
 
+
+	function workout:recordEmom()
+		print( 'Emom Recorded' )
+
+		table.insert( workout.results, { 
+			segment_id		= workout.curSegment.id,
+			segment_type 	= workout.curSegment.segment_type,
+			segment_content = workout.curSegment.content,
+			round 			= workout.curSegment.cycleCount,
+			time 			= workout.clock.elapsedTime,
+			})
+
+
+		workout.actionBtn.label.text = 'Resting'
+		workout.actionBtn.onRelease = function() return false end
+	end
+
 	function workout:start()
 		if settings.audio then audio.play( M.audio.go ) end
 		workout.startedAt = osDate( "%Y-%m-%d %H:%M" )
@@ -175,7 +197,63 @@ function M:new( opts )
 		timer.performWithDelay( 1250, function() Composer.gotoScene( 'scenes.workout_summary' ) end )
 	end
 
+	function workout:advanceEmom()
+		print( "advancing Emom" )
+		workout.curSegment.cycleCount = workout.curSegment.cycleCount + 1
+		if workout.curSegment.cycleCount >= workout.curSegment.repeat_count + 1 then 
+			-- ToDo -- these need to go to the next segment
+			workout:finish() 
+			return false
+		end
+
+		workout.roundDisp.preLabel = "EMOM: "
+		workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
+		workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
+
+		workout.actionBtn.label.text = 'Record EMOM'
+		workout.actionBtn.onRelease = function() workout:recordEmom() end
+
+		-- load curSegment clock stuff
+		local segStart, segEnd = workout.curSegment.repeat_interval * 1000, 0
+
+		self.segClock:reset( segStart, segEnd )
+		self.segClock:start()
+
+	end
+
+	function workout:advanceTabata( work_rest )
+		work_rest = work_rest or 'work'
+		print( "advancing Tabata" )
+		workout.curSegment.cycleCount = workout.curSegment.cycleCount + 1
+		if workout.curSegment.cycleCount >= workout.curSegment.repeat_count + 1 then 
+			-- ToDo -- these need to go to the next segment
+			workout:finish() 
+			return false
+		end
+
+		workout.roundDisp.preLabel = "Tabata: "
+		workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
+		workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
+
+		-- load curSegment clock stuff
+		local segStart, segEnd = workout.curSegment.repeat_interval * 1000, 0
+
+		self.segClock:reset( segStart, segEnd )
+		self.segClock:start()
+
+	end
+
 	function workout:advanceSegment( btn )
+
+		if workout.curSegment.segment_type == 'emom' then 
+			workout:advanceEmom()
+			return false
+		end
+
+		if workout.curSegment.segment_type == 'tabata' then 
+			workout:advanceTabata()
+			return false
+		end
 		
 		-- Can't double-click protect this cause it's called by code
 		if btn then
@@ -309,6 +387,9 @@ function M:new( opts )
 
 			workout.curSegment = workout.data.segments[workout.curSegmentIdx]
 
+			-- cycle count used for auto-advance segments like emom & tabata
+			workout.curSegment.cycleCount = 1
+
 			workout.header = UI:setHeader({
 				parent 		= workout,
 				title 		= workout.data.title
@@ -369,6 +450,16 @@ function M:new( opts )
 				workout.roundDisp.preLabel = "Round: "
 				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
 				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.roundCount .. workout.roundDisp.postLabel
+			elseif workout.curSegment.segment_type == 'emom' then 
+				workout.roundDisp.isVisible = true
+				workout.roundDisp.preLabel = "Round: "
+				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
+				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
+			elseif workout.curSegment.segment_type == 'tabata' then 
+				workout.roundDisp.isVisible = true
+				workout.roundDisp.preLabel = "Tabata: "
+				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
+				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
 			elseif workout.curSegment.segment_type == 'amrap' then
 				workout.roundDisp.isVisible = true
 				workout.roundDisp.preLabel = "Rounds: "
@@ -387,6 +478,12 @@ function M:new( opts )
 				segStart = workout.curSegment.duration * 1000
 				segEnd = 0 
 			end
+
+			if workout.curSegment.segment_type == 'emom' or workout.curSegment.segment_type == 'tabata' then 
+				segStart = workout.curSegment.repeat_interval * 1000
+				segEnd = 0 
+			end 
+
 			workout.segClock = Clock:new({
 				parent 		= workout,
 				y 			= workout.sep.y + 18,
@@ -459,6 +556,12 @@ function M:new( opts )
 				bgColor = { 0, 0.33, 0 },
 				})
 
+
+			-- no action button for tabatas
+			if workout.curSegment.segment_type == 'tabata' then
+				workout.actionBtn.isVisible = false
+			end
+
 			-- if workout is one-segment AMRAP and time is up
 			-- or if primary clock caps-out
 			-- kill the workout
@@ -468,9 +571,13 @@ function M:new( opts )
 			workout.segClock:addEventListener( 'timesUp', function() workout:advanceSegment() end )
 
 
+
 			if workout.curSegment.segment_type == 'amrap' or workout.curSegment.segment_type == 'rft' then
 				workout.actionBtn.label.text = 'Count Round'
 				workout.actionBtn.onRelease = function() workout:countRound() end
+			elseif workout.curSegment.segment_type == 'emom' then 
+				workout.actionBtn.label.text = 'Record EMOM'
+				workout.actionBtn.onRelease = function() workout:recordEmom() end
 			else
 				workout.actionBtn.label.text = 'Advance'
 				workout.actionBtn.onRelease = function() workout:advanceSegment( true ) end
@@ -481,7 +588,7 @@ function M:new( opts )
 			-- now, we can make the count in a setting: 0, 3, 5, 10
 			workout.countInCount = settings.countIn
 			if settings.countIn > 0 then
-				timer.performWithDelay( 1000, countIn, settings.countIn + 1 )
+				workout.countInTimer = timer.performWithDelay( 1000, countIn, settings.countIn + 1 )
 			else
 				workout:start()
 			end

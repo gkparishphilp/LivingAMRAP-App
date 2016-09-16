@@ -116,26 +116,35 @@ function scene:show( event )
 		ui.segResultsDisp = {}
 
 		for i=1, #results do 
-			local formattedTime = string.format( "%02d", Clock.getMinutes( results[i].time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( results[i].time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( results[i].time ) )
-			if i > 1 then 
-				formattedTime = string.format( "%02d", Clock.getMinutes( results[i].time - results[i-1].time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( results[i].time - results[i-1].time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( results[i].time - results[i-1].time ) )
-			end
-			
-			lbl = results[i].segment_content
+			if not( results[i].segment_type == 'rest' ) then
 
-			if not( results[i].round == 0 ) then 
-				lbl = lbl .. "(round " .. results[i].round ..')'
+				local formattedTime = string.format( "%02d", Clock.getMinutes( results[i].time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( results[i].time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( results[i].time ) )
+				if i > 1 then 
+					formattedTime = string.format( "%02d", Clock.getMinutes( results[i].time - results[i-1].time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( results[i].time - results[i-1].time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( results[i].time - results[i-1].time ) )
+				end
+				
+				lbl = results[i].segment_content
+
+				if results[i].segment_type == 'rft' then 
+					lbl = lbl .. "(round " .. results[i].round ..')'
+				end
+
+				if not( results[i].round == 0 ) then 
+					lbl = lbl .. "(round " .. results[i].round ..')'
+				end
+
+				ui.segResultsDisp[i] = display.newText({
+					parent 	= summaryGroup,
+					text 	= lbl .. ":  " .. formattedTime,
+					x 		= centerX,
+					y 		= y,
+					font 	= 'Lato.ttf',
+					fontSize = 18
+					})
+				y = y + yPad / 1.5
+
 			end
 
-			ui.segResultsDisp[i] = display.newText({
-				parent 	= summaryGroup,
-				text 	= lbl .. ":  " .. formattedTime,
-				x 		= centerX,
-				y 		= y,
-				font 	= 'Lato.ttf',
-				fontSize = 18
-				})
-			y = y + yPad / 1.5
 		end
 
 		

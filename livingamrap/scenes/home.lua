@@ -8,6 +8,7 @@ local Composer = require( "composer" )
 local scene = Composer.newScene()
 
 local Theme = require( 'ui.theme' )
+local Colors = require( 'ui.colors' )
 local Btn = require( 'ui.btn' )
 local UI = require( 'ui.factory' )
 local Clock = require( 'objects.clock' )
@@ -40,7 +41,7 @@ function scene:create( event )
 	-- repeatTrans()
 
 	ui.bgDim = display.newRect( group, centerX, centerY, screenWidth, screenHeight )
-	ui.bgDim.fill = { 0, 0, 0, 0.66 }
+	ui.bgDim.fill = { 1, 1, 1, 0.33 }
 
 	ui.title1 = display.newText({
 		parent 	= group,
@@ -50,6 +51,7 @@ function scene:create( event )
 		x 			= centerX - 80,
 		y 			= 40
 		})
+	ui.title1.fill = Colors.dkGrey
 
 	ui.title2 = display.newText({
 		parent 	= group,
@@ -59,6 +61,7 @@ function scene:create( event )
 		x 			= centerX - 80 + ui.title1.contentWidth + 30,
 		y 			= 40
 		})
+	ui.title2.fill = Colors.dkGrey
 
 	local width = ui.title1.contentWidth + ui.title2.contentWidth + 10
 	ui.title1.anchorX = 0

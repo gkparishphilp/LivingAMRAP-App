@@ -5,13 +5,14 @@
 local Composer = require( 'composer' )
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
+local Colors = require( 'ui.colors' ) 
 
 local bgDefaults = {
 	x 			= centerX,
 	y 			= centerY,
 	width 		= screenWidth,
 	height 		= screenHeight,
-	fill 		= { 0.2, 0, 0.2, 1 },
+	fill 		= Colors.ltGray,
 }
 
 local headerDefaults = {
@@ -21,9 +22,9 @@ local headerDefaults = {
 	backBtn 	= true,
 	fontSize 	= 26,
 	fontColor 	= { 0.95, 0.95, 0.95, 1 },
-	bgColor 	= { 0, 0, 0, 1 },
-	btnColor 	= { 0.5, 0.5, 0.5 },
-	borderColor = { 0.5, 0.5, 0.5, 1 }
+	bgColor 	= Colors.mdGrey,
+	btnColor 	= Colors.green,
+	borderColor = Colors.dkGrey
 }
 
 local M = {}
@@ -107,7 +108,8 @@ function M:setHeader( opts )
 		parent 			= header,
 		label 			= 'Back',
 		labelColor  	= { 0 } ,
-		bgColor 		= opts.btnColor,
+		bgColor 		= Colors.red,
+		bgColorPressed 	= Colors.dkRed,
 		width			= 30,
 		height			= 30,
 		strokeWidth 	= 1,
@@ -122,14 +124,15 @@ function M:setHeader( opts )
 		parent 			= header,
 		imageIcon 		= '/assets/images/menu-icon.png',
 		labelColor  	= opts.fontColor,
-		bgColor 		= opts.btnColor,
+		bgColor 		= Colors.blue,
+		bgColorPressed 	= Colors.dkBlue,
 		width			= 30,
 		height			= 30,
 		strokeWidth 	= 1,
 		x				= screenWidth-20,
 		y				= opts.height/2,
 		fontSize		= 14,
-		onRelease 		= function() if Composer.getVariable( 'overlay' ) then Composer.hideOverlay( 'slideRight' ) else Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
+		onRelease 		= function() if Composer.getVariable( 'overlay' ) then transition.to( header.menu_btn.imageIcon, { rotation = 0 } ); Composer.hideOverlay( 'slideRight' ) else transition.to( header.menu_btn.imageIcon, { rotation = 90 } ); Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
 	})
 
 
@@ -138,7 +141,7 @@ function M:setHeader( opts )
 		text 		= opts.title,
 		x 			= screenWidth - 50, 
 		y 			= opts.height/2,
-		font 		= 'Lato-Bold.ttf',
+		font 		= 'Lato-Light.ttf',
 		fontSize 	= opts.fontSize 
 	})
 	header.title.fill = opts.fontColor

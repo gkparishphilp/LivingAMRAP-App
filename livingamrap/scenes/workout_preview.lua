@@ -12,6 +12,7 @@ Widget.setTheme( "widget_theme_android_holo_dark" )
 
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
+local Colors = require( 'ui.colors' )
 local UI = require( 'ui.factory' )
 local json = require( 'json' )
 
@@ -136,8 +137,8 @@ function scene:show( event )
 			x 	= centerX,
 			y 	= screenHeight - 100,
 			label 	= "Ready! Ready!",
-			bgColor 	= { 0, 0.65, 0, 1 },
-			bgColorPressed 	= { 0, 0.25, 0, 1 },
+			bgColor 	= Colors.green,
+			bgColorPressed 	= Colors.dkGreen,
 			onRelease 	= function() Composer.gotoScene( "scenes.workout_run" ) end
 			})
 

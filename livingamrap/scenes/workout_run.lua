@@ -34,6 +34,17 @@ function scene:show( event )
 			parent 	= group,
 			slug 	= slug
 			})
+
+		-- ui.go_btn = Btn:new({
+		-- 	parent 	= group,
+		-- 	label 	= 'Go',
+		-- 	width 	= 50,
+		-- 	height 	= 50,
+		-- 	bgColor = { 0, 1, 0 },
+		-- 	y 	= screenHeight - 50,
+		-- 	x 	= screenWidth - 50,
+		-- 	onRelease = function() timer.cancel( workout.countInTimer ); workout:start(); display.remove( ui.go_btn ) end
+		-- 	})
 	end
 	
 end

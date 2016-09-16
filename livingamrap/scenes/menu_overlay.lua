@@ -32,7 +32,7 @@ function scene:show( event )
 
 	if event.phase == "will" then
 
-		panel.frame = display.newRoundedRect( group, screenWidth, 50, 200, 300, 6 )
+		panel.frame = display.newRoundedRect( group, screenWidth, 50, screenWidth * 0.66, 300, 6 )
 		panel.frame.anchorX, panel.frame.anchorY = 1, 0
 		panel.frame.fill = { 0.15 }
 		panel.frame.alpha = 0.85
@@ -41,26 +41,107 @@ function scene:show( event )
 		panel.frame.strokeWidth = 6
 		panel.frame:setStrokeColor( 0.25, 0.25, 0.25, 0.5 )
 		
-		ui.title = display.newText( panel, "Hello!", 0, 0, 'Lato.ttf', 28 )
-		ui.title.anchorY, ui.title.anchorX = 0, 0.5
-		ui.title.y = 70
-		ui.title.x = screenWidth * 0.66
+		local y = 80
 
-		ui.info = display.newText( panel, "This is just some text blah blah blah", 0, 0, panel.frame.width-40, panel.height-80, 'Lato-Bold.ttf', 16 )
-		ui.info.anchorY, ui.info.anchorX = 0, 0.5
-		ui.info.y = 130
-		ui.info.x = screenWidth * 0.66
+		ui.home_link = display.newText({
+			parent 	= panel,
+			text 	= 'Home',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.home_link.anchorX = 0
 
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
 
-		ui.close_btn = Btn:new({
-			group 	= panel,
-			label 	= 'Close',
-			width		= 60,
-			height		= 30,
-			x			= screenWidth * 0.66,
-			y			= panel.frame.height,
-			onRelease = function() Composer.hideOverlay( 'slideRight' ) end
-		})
+		ui.results_link = display.newText({
+			parent 	= panel,
+			text 	= 'Results',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.results_link.anchorX = 0
+
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
+
+		ui.settings_link = display.newText({
+			parent 	= panel,
+			text 	= 'Settings',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.settings_link.anchorX = 0
+
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
+
+		ui.workouts_link = display.newText({
+			parent 	= panel,
+			text 	= 'Workouts',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.workouts_link.anchorX = 0
+
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
+
+		ui.movements_link = display.newText({
+			parent 	= panel,
+			text 	= 'Movements',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.movements_link.anchorX = 0
+
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
+
+		ui.account_link = display.newText({
+			parent 	= panel,
+			text 	= 'Account',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.account_link.anchorX = 0
+
+		y = y + 20 
+		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep:setStrokeColor( 0.33 )
+		y = y + 20 
+
+		ui.logout_link = display.newText({
+			parent 	= panel,
+			text 	= 'Logout',
+			font 	= 'Lato.ttf',
+			fontSize 	= 16,
+			x 		= screenWidth * 0.33 + 40,
+			y 		= y
+			})
+		ui.logout_link.anchorX = 0
 
 		group:insert( panel )
 

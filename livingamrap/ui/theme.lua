@@ -1,7 +1,8 @@
 local device = require( 'utilities.device' )
-
+local colors = require( 'ui.colors' )
 
 local T = {
+
 	buttons 	= {
 		width 		= screenWidth * 0.66,
 		height 		= 60,
@@ -11,10 +12,8 @@ local T = {
 		colors 		= {
 			label				= { 0.8, 0.8, 0.8 },
 			labelPressed		= { 1, 1, 1 },
-			bg 			= { 0, 0, 0, 0.5 },
-			bgPressed 	= { 0, 0, 0, 0.8 },
-			--bg 			= { 149/255, 100/255, 158/255, 0.5 },
-			--bgPressed 	= { 99/255, 50/255, 108/255, 0.8 },
+			bg 			= colors.purple,
+			bgPressed 	= colors.dkPurple,
 		},
 	},
 	
