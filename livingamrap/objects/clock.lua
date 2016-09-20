@@ -50,6 +50,12 @@ M.getMinutes = get_minutes
 M.getSeconds = get_seconds
 M.getHundredths = get_hundredths
 
+function M.humanizeTime( opts )
+	opts = opts or {} 
+	local time = opts.time
+	return string.format( "%02d", get_minutes( time ) ) .. ':' .. string.format( "%02d", get_seconds( time ) ) .. '.' .. string.format( "%02d", get_hundredths( time ) )
+end
+
 -- The defaults for a new clock
 M.defaults = { 
 	font			= 'digital-7-mono.ttf',
@@ -248,6 +254,8 @@ function M:new( opts )
 			
 			self.elapsedTime = self.elapsedTime + tickDuration
 
+			if self then self:dispatchEvent( { name = 'tick', target = self } ) end
+
 			if( self.direction == 'up' ) then
 				self.displayTime = self.displayTime + tickDuration
 			else
@@ -269,6 +277,37 @@ function M:new( opts )
 
 			self:updateDisplay()
 		end
+	end
+
+	function clock:getX()
+		return self.minDisplay.x
+	end
+
+	function clock:getY()
+		return self.minDisplay.y
+	end
+
+	function clock:getHW()
+		-- ToDo
+		local h, w 
+		h = self.minDisplay.contentHeight + self.secDisplay.contentHeight
+		w = self.minDisplay.contentWidth + self.secDisplay.contentWidth
+		-- add hours, huns if present
+		-- add x & y offset distances
+		return h, w
+	end
+
+
+	function clock:human_string( time_type )
+		time_type = time_type or 'elapsed'
+
+		local time = self.elapsedTime
+
+		if time_type == 'current' then
+			time = self.displayTime
+		end
+
+		return M.humanizeTime({ time = time })
 
 	end
 

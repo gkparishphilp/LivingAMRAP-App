@@ -27,26 +27,33 @@ local data, data_table
 -- Called when the scene's view does not exist:
 function scene:create( event )
 	local group = self.view
-
-	ui.bg = UI:setBg({
-		parent 		= group,
-		image 			= 'assets/images/bgs/bg2.png',
-		--imgWidth 		= ,
-		--imgHeight 	= ,
-		y 		= centerY + Theme.headerHeight
-		})
-
-	ui.header = UI:setHeader({
-		parent 	= group,
-		title 	= 'Movements'
-		})
-
 end
 
 function scene:show( event )
 	local group = self.view
-
+	
 	if event.phase == "will" then
+
+		local Layout = require( 'ui.layout_' .. screenOrient )
+
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height - Layout.headerHeight,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.centerY + Layout.headerHeight,
+			fillScale 	= 1,
+			fill 		= { type = 'image', filename = 'assets/images/bgs/bg2.png' },
+			})
+
+		ui.header = UI:setHeader({
+			parent 	= group,
+			title 	= 'Movements',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight
+			})
 
 		local function getData( e )
 			if e.isError then
@@ -72,8 +79,6 @@ function scene:show( event )
 		local url = 'http://localhost:3003/movements.json'
 		network.request( url, 'GET', getData )
 
-		--Debug.print_table( program_data )
-
 		local function onRowRender( e )
 			local row = e.row
 			-- Cache the row "contentWidth" and "contentHeight" because the row bounds can change as children objects are added
@@ -91,14 +96,16 @@ function scene:show( event )
 
 		local function onRowTouch( e )
 			local slug = e.target.params.slug
-			Composer.gotoScene( "scenes.movement_show", { params = { slug = slug } } )
+			Composer.setVariable( 'objType', 'movement' )
+			Composer.setVariable( 'objSlug', slug )
+			Composer.gotoScene( "scenes.movements_show" )
 		end
 
 		data_table = Widget.newTableView({
-			left 			= 0,
-			top 			= 80,
-			height 			= screenHeight - 80,
-			width 			= screenWidth,
+			left 			= Layout.dataTableHpad,
+			top 			= Layout.headerHeight,
+			height 			= Layout.height - Layout.headerHeight,
+			width 			= Layout.width - 2*Layout.dataTableHpad,
 			hideBackground  = true,
 			onRowRender 	= onRowRender,
 			onRowTouch 		= onRowTouch,
@@ -115,7 +122,7 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
-		data_table:removeSelf()
+		display.remove( data_table )
 	end
 	
 end

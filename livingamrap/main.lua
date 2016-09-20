@@ -10,8 +10,14 @@ centerY = display.contentCenterY
 screenWidth = display.contentWidth
 screenHeight = display.contentHeight
 
+screenOrient = system.orientation
+if screenOrient == 'landscapeRight' then screenOrient = 'landscape' end
+if screenOrient == 'landscapeLeft' then screenOrient = 'landscape' end
+if screenOrient == 'portraitUpsideDown' then screenOrient = 'portrait' end
+
+reOrientEnabled = true
+
 default_settings = {
-	audio		= true,
 	audioVolume = 0.5,
 	countIn 	= 3,
 }
@@ -56,6 +62,21 @@ local function onKeyPress( event )
 end
 --add the key callback
 Runtime:addEventListener( "key", onKeyPress )
+
+
+local function reOrient( e )
+	if reOrientEnabled then
+		screenOrient = system.orientation
+
+		if screenOrient == 'landscapeRight' then screenOrient = 'landscape' end
+		if screenOrient == 'landscapeLeft' then screenOrient = 'landscape' end
+		if screenOrient == 'portraitUpsideDown' then screenOrient = 'portrait' end
+		local curScene = Composer.getSceneName( 'current' )
+		Composer.removeScene( curScene )
+		Composer.gotoScene( curScene )
+	end
+end
+Runtime:addEventListener( "orientation", reOrient )
 
 Composer.gotoScene( "scenes.home" )
 

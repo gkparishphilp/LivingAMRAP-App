@@ -8,10 +8,11 @@ local Composer = require( "composer" )
 local scene = Composer.newScene()
 
 local Theme = require( 'ui.theme' )
-local Colors = require( 'ui.colors' )
 local Btn = require( 'ui.btn' )
 local UI = require( 'ui.factory' )
 local Clock = require( 'objects.clock' )
+
+local Debug = require( 'utilities.debug' )
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -21,112 +22,74 @@ local ui = {}
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
-	local group = self.view
-
-
-
-	local y = 120
-	local btnPad = 20
-
-	ui.bg = UI:setBg({
-		parent 		= group,
-		wrapX 		= 'repeat',
-		wrapY 		= 'repeat',
-		fillScale 	= 1,
-		fill 		= { type = 'image', filename = 'assets/images/bgs/bg6.jpg' },
-		})
-	-- local function repeatTrans()
-	-- 	transition.to( bg.fill, { time=4000, x=bg.fill.x+0.5, onComplete=repeatTrans })
-	-- end
-	-- repeatTrans()
-
-	ui.bgDim = display.newRect( group, centerX, centerY, screenWidth, screenHeight )
-	ui.bgDim.fill = { 1, 1, 1, 0.33 }
-
-	ui.title1 = display.newText({
-		parent 	= group,
-		text 		= 'Living',
-		font 		= 'NothingYouCouldDo.ttf',
-		fontSize 	= 36,
-		x 			= centerX - 80,
-		y 			= 40
-		})
-	ui.title1.fill = Colors.dkGrey
-
-	ui.title2 = display.newText({
-		parent 	= group,
-		text 		= 'AMRAP',
-		font 		= Theme.fonts.black,
-		fontSize 	= 36,
-		x 			= centerX - 80 + ui.title1.contentWidth + 30,
-		y 			= 40
-		})
-	ui.title2.fill = Colors.dkGrey
-
-	local width = ui.title1.contentWidth + ui.title2.contentWidth + 10
-	ui.title1.anchorX = 0
-	ui.title2.anchorX = 0
-	ui.title1.x = centerX - ( width * 0.5 )
-	ui.title2.x = ui.title1.x + ui.title1.contentWidth + 10
-
-
-
-
-	ui.select = Btn:new({
-		label			= 'Workouts',
-		y				= y,
-		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.workout_index" ) end
-	})
-
-	y = y + Theme.buttons.height + btnPad 
-
-	ui.movements = Btn:new({
-		label			= 'Movements',
-		y				= y,
-		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.movement_index" ) end
-	})
-
-	y = y + Theme.buttons.height + btnPad 
-
-	ui.msettigns = Btn:new({
-		label			= 'Settings',
-		y				= y,
-		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.settings" ) end
-	})
-
-
-
-	ui.test_clock = Btn:new({
-		label			= 'View All Results',
-		y				= screenHeight - btnPad * 6,
-		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.results" ) end
-	})
-
-	y = y + Theme.buttons.height + btnPad 
-
-	ui.test_workout = Btn:new({
-		label			= 'Test Workout',
-		y				= screenHeight - btnPad * 2,
-		group 			= group,
-		onRelease 		= function() Composer.gotoScene( "scenes.test_workout" ) end
-	})
-
 end
 
 function scene:show( event )
 	local group = self.view
 
-	if event.phase == 'will' then 
+	if event.phase == 'will' then
+		local Layout = require( 'ui.layout_' .. screenOrient )
 
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.height * 0.5,
+			wrapX 		= 'repeat',
+			wrapY 		= 'repeat',
+			fillScale 	= 1,
+			fill 		= { type = 'image', filename = 'assets/images/bgs/bg6.jpg' },
+			})
+		-- local function repeatTrans()
+		-- 	transition.to( bg.fill, { time=4000, x=bg.fill.x+0.5, onComplete=repeatTrans })
+		-- end
+		-- repeatTrans()
+
+		ui.bgDim = display.newRect( group, Layout.centerX, Layout.centerY, Layout.width, Layout.height )
+		ui.bgDim.fill = { 0, 0, 0, 0.5 }
+
+		ui.title1 = display.newText({
+			parent 	= group,
+			text 		= 'Living',
+			font 		= 'NothingYouCouldDo.ttf',
+			fontSize 	= 36,
+			x 			= Layout.centerX - 80,
+			y 			= Layout.home.titleY
+			})
+		ui.title1.fill = Theme.colors.whiteGrey
+
+		ui.title2 = display.newText({
+			parent 	= group,
+			text 		= 'AMRAP',
+			font 		= Theme.fonts.black,
+			fontSize 	= 36,
+			x 			= Layout.centerX - 80 + ui.title1.contentWidth + 30,
+			y 			= Layout.home.titleY
+			})
+		ui.title2.fill = Theme.colors.whiteGrey
+
+		local width = ui.title1.contentWidth + ui.title2.contentWidth + 10
+		ui.title1.anchorX = 0
+		ui.title2.anchorX = 0
+		ui.title1.x = Layout.centerX - ( width * 0.5 )
+		ui.title2.x = ui.title1.x + ui.title1.contentWidth + 10
+
+		ui.btns = {}
+		for i = 1, #Layout.home.buttons do 
+			ui[i] = Btn:new({
+				group 			= group,
+				label			= Layout.home.buttons[i].label,
+				x				= Layout.home.buttons[i].x,
+				y				= Layout.home.buttons[i].y,
+				width			= Layout.home.buttons[i].width,
+				height			= Layout.home.buttons[i].height,
+				fontSize		= Layout.home.buttons[i].fontSize,
+				onRelease 		= function() Composer.gotoScene( Layout.home.buttons[i].target ) end
+			})
+		end
 	end
 
-	if event.phase == "did" then
-
-	end
 	
 end
 

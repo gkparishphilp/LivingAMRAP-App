@@ -64,6 +64,10 @@ function scene:show( event )
 			row.lines = {}
 
 			local summary = table.remove( all_results[i] )
+
+			print( "here are the summary results... " )
+			Debug.printTable( summary )
+
 			local titleTxt = display.newText({
 				parent = group,
 				x 	= 10,
@@ -85,9 +89,7 @@ function scene:show( event )
 				})
 			dateTxt.anchorX = 0
 
-
-
-			local result = string.format( "%02d", Clock.getMinutes( summary.total_time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( summary.total_time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( summary.total_time ) )
+			local result = Clock.humanizeTime( { time = summary.total_time } )
 
 			if summary.workout_type == 'amrap' then 
 				result = summary.total_rounds .. ' Rds'

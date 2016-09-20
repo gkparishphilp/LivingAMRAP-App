@@ -1,18 +1,6 @@
 
-
--- add a small end-workout button -- user may not want to micro-manage rounds
-  -- put in menu?
--- fix results table (add rounds/reps)
--- add notes & rx to results
--- update font size in segment display?
---   add active segment & next segment display
--- major refactor: tabata & emom can't advance segment. 
---   drive everything to segment
-
--- add an accumulated time mode
-
-
 local osDate = os.date
+local osTime = os.time
 
 local Clock = require( 'objects.clock' )
 local Composer = require( 'composer' )
@@ -23,24 +11,19 @@ local json = require( 'json' )
 
 local Debug = require( 'utilities.debug' )
 
-
 local FileUtils = require( "utilities.file" )
 
 local M = {}
 
-M.audio = {}
-M.audio.count = audio.loadSound( 'assets/audio/count_tone.mp3' )
-M.audio.go = audio.loadSound( 'assets/audio/go_tone.wav' )
-M.audio.round = audio.loadSound( 'assets/audio/powerup.wav' )
-M.audio.finished = audio.loadSound( 'assets/audio/buzzer.mp3' )
+
 
 M.defaults = {
 	slug 	= 'cindy'
 }
 
-
-
 function M:new( opts )
+	local Layout = require( 'ui.layout_' .. screenOrient )
+
 	if opts == nil then opts = M.defaults end
 	
 	-- fill in any missing opts from module defaults
@@ -51,10 +34,14 @@ function M:new( opts )
 	end
 
 	local workout = display.newGroup()
+	workout.isVisible = false 
 
 	local settings = FileUtils.loadTable( "settings.json" )
 	-- have to initialize settings in case file doesn't exist
 	settings = settings or default_settings
+
+	settings.audio = settings.audioVolume > 0
+	audio.setVolume( settings.audioVolume )
 
 	if opts.group then 
 		opts.group:insert( workout )
@@ -68,534 +55,505 @@ function M:new( opts )
 
 	workout.results = {}
 	workout.anims = {}
-	workout.totalRoundCount = 0
+	workout.audio = {}
 
-	-- ToDo: move these into segment
-	workout.roundCount = 0
-	workout.roundsToComplete = 0
-	
+	workout.audio.count = audio.loadSound( 'assets/audio/count_tone.mp3' )
+	workout.audio.go = audio.loadSound( 'assets/audio/go_tone.wav' )
+	workout.audio.round = audio.loadSound( 'assets/audio/powerup.wav' )
+	workout.audio.finished = audio.loadSound( 'assets/audio/buzzer.mp3' )
+
+
+	workout.totalRoundCount = 0
+	workout.lastResultTime = 0
+
+	workout.curSegment = {}
+
+	-- workout display
+	-- this is portrait
+	-- ToDo Adjust layout for landscape
+
+	workout.header = UI:setHeader({
+			parent 	= workout,
+			title 	= 'A Workout',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight
+			})
+
+	workout.clock = Clock:new({
+		parent 		= workout,
+		x 			= Layout.workout.clockX,
+		y 			= Layout.workout.clockY,
+		fontSize 	= Layout.workout.clockFontSize,
+		startAt 	= 0,
+		endAt 		= -1,
+		showHunds 	= true
+		})
+	workout.clock.anchorY = 0
+
+	workout.infoDisplay = display.newText({
+		parent 	= workout,
+		text  	= "Round: 3/8",
+		x 		= Layout.workout.infoDisplayX,
+		y 		= Layout.workout.infoDisplayY,
+		font 	= 'digital-7-mono.ttf',
+		fontSize = Layout.workout.infoDisplayFontSize - 2,
+		})
+	workout.infoDisplay.anchorX = 0
+
+	workout.segClock = Clock:new({
+		parent 		= workout,
+		x 			= Layout.workout.segClockX,
+		y 			= Layout.workout.segClockY,
+		fontSize 	= Layout.workout.segClockFontSize,
+		startAt 	= 0,
+		endAt 		= -1,
+		fontFill 	= { 1 },
+		showHunds 	= true
+		})
+	workout.segClock.anchorX = 1
+
+	workout.infoSep = display.newLine( workout, Layout.workout.infoSepStartX, Layout.workout.infoSepStartY, Layout.workout.infoSepEndX, Layout.workout.infoSepEndY )
+	workout.infoSep.alpha = 0.5
+
+	workout.segmentsDisplay = {}
+	workout.segmentsDisplay.activeY = Layout.workout.activeSegmentY
+
+	workout.actionBtn = Btn:new({
+		parent 		= workout,
+		label 		= 'Action',
+		x 			= Layout.workout.actionBtnX,
+		y 			= Layout.workout.actionBtnY,
+		width  		= Layout.workout.actionBtnWidth,
+		height  	= Layout.workout.actionBtnHeight,
+		bgColor 	= Theme.colors.dkGreen,
+		bgColorPressed 	= Theme.colors.green,
+		})
+
+
+	local function animateResult( opts )
+		-- used to show fancy animations at end of rounds
+		opts.font = opts.font or 'digital-7-mono.ttf'
+		opts.largest_size = opts.largest_size or 100
+		opts.time = opts.time or 600
+		opts.end_x = opts.end_x or Layout.centerX
+		opts.end_y = opts.end_y or Layout.centerY
+
+		local textToAnimate = display.newText({
+				parent 	= workout,
+				text 	= opts.text,
+				x 		= Layout.centerX ,
+				y 		= Layout.centerY,
+				font 	= opts.font,
+				fontSize = 1
+				})
+			workout.anims[#workout.anims+1] = transition.to( textToAnimate, { size=opts.largest_size, time=opts.time, onComplete=function() transition.to( textToAnimate, { size=20, time=opts.time, x=opts.end_x, y=opts.end_y, onComplete=function() display.remove( textToAnimate ); end } ) end } )
+	end
 
 
 	local function countIn()
 		local countTxt = display.newText({
 			text = workout.countInCount,
-			x 		= centerX,
-			y 		= centerY,
+			x 		= Layout.centerX,
+			y 		= Layout.centerY,
 			font 	= 'Lato-Black.ttf',
 			fontSize = 1
 			})
 
-
 		local trxn = easing.outInExpo
 		if workout.countInCount > 0 then 
-			if settings.audio then audio.play( M.audio.count ) end 
+			if settings.audio then audio.play( workout.audio.count ) end 
 			transition.to( countTxt, { size=500, time=900, transition=trxn, onComplete=function() display.remove( countTxt ) end } )
 		else
 			countTxt.text = 'Go!'
 			transition.to( countTxt, { size=300, time=300, onComplete = function() display.remove( countTxt ); workout:start() end } )	
 		end
-
 		workout.countInCount = workout.countInCount - 1 
 	end
 
 
-	function workout:countRound()
-		if settings.audio then audio.play( M.audio.round ) end
+
+	function workout:advanceSegment( opts )
+		opts = opts or {}
+		if opts.record == nil then opts.record = true end
+		-- Can't double-click protect this cause it's called by code
+		if opts.btn then
+			if self.lastActionTime and ( self.clock.elapsedTime - self.lastActionTime < 1000 ) then 
+				return false
+			end
+			self.lastActionTime = self.clock.elapsedTime
+		end
+
+		if opts.btn then 
+			animateResult({ text = self.segClock:human_string() })
+		end
+
+		if opts.record then self:recordResults() end
+
+		self.curSegmentIdx = self.curSegmentIdx + 1
+		if self.curSegmentIdx > #self.data.segments then 
+			self:finish()
+		else
+			self.curSegment = self.data.segments[self.curSegmentIdx]
+			if settings.audio then audio.play( self.audio.round ) end
+			self:initCurSegment()
+			if self.curSegment.start_on == 'ready' then
+				-- ToDo
+				-- show 'ready, ready' and/or countin
+			else
+				self.segClock:start()
+			end
+		end
+	end
+
+	function workout:cleanup()
+		workout.clock:pause()
+		workout.clock:cleanup()
+		workout.segClock:pause()
+		workout.segClock:cleanup()
 		
-		if workout.lastActionTime and ( workout.clock.elapsedTime - workout.lastActionTime < 1000 ) then 
-			--native.showAlert( 'Double Click', "That's too fast", { 'Ok' } )
+		for i=1, #workout.anims do 
+			transition.cancel( workout.anims[i] )
+		end
+		for i=1, #workout.audio do 
+			audio.dispose( workout.audio[i] )
+		end
+		display.remove( self )
+	end
+
+	function workout:countEmom()
+		-- slightly different from normal, since we just record results and let user rest
+		self:recordResults()
+
+		self.actionBtn.label.text = 'Resting'
+		self.actionBtn.onRelease = function() return false end
+	end
+
+	function workout:countRound()
+		-- Used for AMRAP and RFT
+
+		if settings.audio then audio.play( self.audio.round ) end
+		
+		if self.lastActionTime and ( self.clock.elapsedTime - self.lastActionTime < 1000 ) then 
+			-- Double Click -- too fast
 			return false
 		end
-		workout.lastActionTime = workout.clock.elapsedTime
+		self.lastActionTime = self.clock.elapsedTime
 
-		workout.roundCount = workout.roundCount + 1
-		workout.totalRoundCount = workout.totalRoundCount + 1
+		self.curSegment.roundCount = self.curSegment.roundCount + 1
+		self.totalRoundCount = self.totalRoundCount + 1
 
-		table.insert( workout.results, { 
-			segment_id		= workout.curSegment.id,
-			segment_type 	= workout.curSegment.segment_type,
-			segment_content = workout.curSegment.content,
-			round 			= workout.roundCount,
-			total_rounds	= workout.totalRoundCount,
-			time 			= workout.clock.elapsedTime,
-			})
+		self:recordResults()
+		self:initInfoDisplay()
 
-
-		if not( workout.curSegment.duration ) then
+		if not( self.curSegment.duration ) then
 			self.segClock:reset()
 			self.segClock:start()
 		end
 
-		if workout.curSegment.segment_type == 'rft' then 
-			if workout.roundCount >= workout.curSegment.repeat_count then 
-				workout:advanceSegment()
-			end
+		animateResult({ text = self.curSegment.roundCount, largest_size=400 })
+
+		if self.curSegment.segment_type == 'rft' and self.curSegment.roundCount >= self.curSegment.repeat_count then 
+			self:advanceSegment()
 		end
 
-		workout.roundCountDisp = display.newText({
-			parent 	= workout,
-			text 	= workout.roundCount,
-			x 		= centerX ,
-			y 		= workout.actionBtn.label.y - 100,
-			--font 	= 'Lato-Black.ttf',
-			font 	= 'digital-7-mono.ttf',
-			fontSize = 1
-			})
-		workout.anims[#workout.anims+1] = transition.to( workout.roundCountDisp, { size=500, duration=1200, onComplete=function() transition.to( workout.roundCountDisp, { size=20, duration=1000, x=workout.roundDisp.x+workout.roundDisp.contentWidth, y=workout.roundDisp.y, onComplete=function() display.remove( workout.roundCountDisp ); workout.roundDisp.text=workout.roundDisp.preLabel .. workout.roundCount .. workout.roundDisp.postLabel end } ) end } )
-	end
-
-
-	function workout:recordEmom()
-		print( 'Emom Recorded' )
-
-		table.insert( workout.results, { 
-			segment_id		= workout.curSegment.id,
-			segment_type 	= workout.curSegment.segment_type,
-			segment_content = workout.curSegment.content,
-			round 			= workout.curSegment.cycleCount,
-			time 			= workout.clock.elapsedTime,
-			})
-
-
-		workout.actionBtn.label.text = 'Resting'
-		workout.actionBtn.onRelease = function() return false end
-	end
-
-	function workout:start()
-		if settings.audio then audio.play( M.audio.go ) end
-		workout.startedAt = osDate( "%Y-%m-%d %H:%M" )
-		self.isVisible = true
-		self.clock:start()
-		self.segClock:start()
-		self.status = 'running'
+		
 	end
 
 	function workout:finish()
-		if settings.audio then audio.play( M.audio.finished ) end
+		if settings.audio then audio.play( self.audio.finished ) end
 		self.clock:pause()
 		self.segClock:pause()
-		workout.startedAt = osDate( "%Y-%m-%d %H:%M" )
-		table.insert( workout.results, { 
-			workout_id		= workout.slug,
-			total_rounds	= workout.totalRoundCount,
-			total_time		= workout.clock.elapsedTime,
-			started_at		= workout.startedAt,
-			ended_at		= workout.endedAt,
-			summary_title	= workout.summaryTitle,
-			workout_type	= workout.data.workout_type,
-			cover_img		= workout.data.cover_img 
-			})
+		self.endedAt = osDate( "%Y-%m-%d %H:%M" )
 
-		print( 'Workout Finished' )
+		self:recordResults({ final=true })
 
-		Composer.setVariable( 'workoutResults', workout.results )
-		
-		self.status = 'finished'
+		Composer.setVariable( 'workoutResults', self.results )
 
 		-- ToDo... play some kind of animation here?
 		-- for now, a slight delay to let the animations finish
-		timer.performWithDelay( 1250, function() Composer.gotoScene( 'scenes.workout_summary' ) end )
+		timer.performWithDelay( 500, function() Composer.gotoScene( 'scenes.workout_summary' ) end )
 	end
 
-	function workout:advanceEmom()
-		print( "advancing Emom" )
-		workout.curSegment.cycleCount = workout.curSegment.cycleCount + 1
-		if workout.curSegment.cycleCount >= workout.curSegment.repeat_count + 1 then 
-			-- ToDo -- these need to go to the next segment
-			workout:finish() 
-			return false
+	function workout:initActionBtn( opts )
+		if self.curSegment.segment_type == 'rest' then 
+			self.actionBtn.label.text = 'Resting'
+			self.actionBtn.onRelease = function() end
+		elseif self.curSegment.segment_type == 'emom' then 
+			self.actionBtn.label.text = 'Done'
+			self.actionBtn.onRelease = function() self:countEmom() end
+		elseif self.curSegment.segment_type == 'amrap' or self.curSegment.segment_type == 'rft' then 
+			self.actionBtn.label.text = 'Count Round'
+			self.actionBtn.onRelease = function() self:countRound() end
+		elseif self.curSegment.segment_type == 'tabata' then
+			self.actionBtn.isVisible = false
+		elseif self.curSegment.segment_type == 'accumulate' then 
+			self.actionBtn.label.text = 'Stop'
+			self.actionBtn.onRelease = function() self:stopAccumulate() end
+		else 
+			self.actionBtn.label.text = 'Advance'
+			self.actionBtn.onRelease = function() self:advanceSegment( { btn=true } ) end
+		end
+	end
+
+	function workout:initClock()
+		-- primary clock pretty much always runs up
+		-- because we're disabling screen-lock, we'll cap all workouts out 
+		-- at 2hrs max for now....
+		local clockStart, clockEnd = 0, ( 1000*120*60 )
+
+		-- Run primary clock down if we have a one-segment amrap (e.g. cindy)
+		if #self.data.segments == 1 and self.curSegment.segment_type == 'amrap' then 
+			clockStart = self.curSegment.duration * 1000
+			self.curSegment.duration = nil
+			clockEnd = 0 
+		end
+		self.clock:reset( clockStart, clockEnd )
+	end
+
+	function workout:initCurSegment()
+		self.curSegment.cycleCount = 1
+		self.curSegment.roundCount = 0
+		self.curSegment.roundsToComplete = 0
+
+		self:initInfoDisplay()
+		self:initSegClock()
+		self:initSegmentsDisplay()
+		self:initActionBtn()
+	end
+
+	function workout:initInfoDisplay( opts )
+		-- initialize to ft
+		local label = "For Time"
+		local info = ""
+
+		if self.curSegment.segment_type == 'accumulate' then
+			label 	= "Accumulate: "
+		elseif self.curSegment.segment_type == 'amrap' then
+			label 	= "Rounds: "
+			info 	= self.curSegment.roundCount
+		elseif self.curSegment.segment_type == 'emom' then 
+			label 	= 'EMoM: '
+			info 	= self.curSegment.cycleCount .. "/" .. self.curSegment.repeat_count
+		elseif self.curSegment.segment_type == 'rest' then 
+			label = "Resting"
+		elseif self.curSegment.segment_type == 'rft' then 
+			label 	= "Round: "
+			info 	= self.curSegment.roundCount .. "/" .. self.curSegment.repeat_count
+		elseif self.curSegment.segment_type == 'tabata' then 
+			label 	= 'TABATA: '
+			info 	= self.curSegment.cycleCount .. "/" .. self.curSegment.repeat_count
 		end
 
-		workout.roundDisp.preLabel = "EMOM: "
-		workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-		workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
+		self.infoDisplay.text = label .. info
+	end
 
-		workout.actionBtn.label.text = 'Record EMOM'
-		workout.actionBtn.onRelease = function() workout:recordEmom() end
+	function workout:initSegClock()
+		-- similar to primary clock, but we'll let segment clock run forever
+		-- since workout clock will terminate workout, and user may not want
+		-- to micro-manage rounds
+		local segStart, segEnd = 0, -1
+		-- run the segment clock down to zero if this segment is timed
+		if self.curSegment.duration and self.curSegment.duration > 0 then 
+			segStart = self.curSegment.duration * 1000
+			segEnd = 0 
+		end
 
-		-- load curSegment clock stuff
-		local segStart, segEnd = workout.curSegment.repeat_interval * 1000, 0
+		if self.curSegment.segment_type == 'emom' or self.curSegment.segment_type == 'tabata' then 
+			segStart = workout.curSegment.repeat_interval * 1000
+			segEnd = 0 
+		end 
+
+		-- single-segment for time (e.g. Fran) doesn't need a segment clock
+		if #self.data.segments == 1 and self.curSegment.segment_type == 'ft' then 
+			self.segClock.isVisible = false 
+		end
 
 		self.segClock:reset( segStart, segEnd )
-		self.segClock:start()
 
 	end
 
-	function workout:advanceTabata( work_rest )
-		work_rest = work_rest or 'work'
-		print( "advancing Tabata" )
-		workout.curSegment.cycleCount = workout.curSegment.cycleCount + 1
-		if workout.curSegment.cycleCount >= workout.curSegment.repeat_count + 1 then 
-			-- ToDo -- these need to go to the next segment
-			workout:finish() 
-			return false
+	function workout:initSegmentsDisplay( opts )
+		opts = opts or {}
+		idx = opts.idx or self.curSegmentIdx
+
+		if workout.segmentsDisplay[idx-1] then 
+			local prevDisp = workout.segmentsDisplay[idx-1]
+			workout.anims[#workout.anims+1] = transition.to( prevDisp, { y=prevDisp.y-50, alpha=0.01, time=500, onComplete=function() display.remove( prevDisp ) end} )
 		end
 
-		workout.roundDisp.preLabel = "Tabata: "
-		workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-		workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
-
-		-- load curSegment clock stuff
-		local segStart, segEnd = workout.curSegment.repeat_interval * 1000, 0
-
-		self.segClock:reset( segStart, segEnd )
-		self.segClock:start()
-
-	end
-
-	function workout:advanceSegment( btn )
-
-		if workout.curSegment.segment_type == 'emom' then 
-			workout:advanceEmom()
-			return false
+		for i=idx, #workout.segmentsDisplay do
+			display.remove( workout.segmentsDisplay[i] )
 		end
 
-		if workout.curSegment.segment_type == 'tabata' then 
-			workout:advanceTabata()
-			return false
-		end
-		
-		-- Can't double-click protect this cause it's called by code
-		if btn then
-			if workout.lastActionTime and ( workout.clock.elapsedTime - workout.lastActionTime < 1000 ) then 
-				--native.showAlert( 'Double Click', "That's too fast", { 'Ok' } )
-				return false
-			end
-			workout.lastActionTime = workout.clock.elapsedTime
-		end
+		-- first segment is active one
+		workout.segmentsDisplay[idx] = display.newText({
+			parent 	= workout,
+			text 	= self.data.segments[idx].content,
+			width 	= Layout.width-20,
+			align 	= 'center',
+			y 		= workout.segmentsDisplay.activeY,
+			x 		= centerX,
+			font 	= Layout.workout.segmentsDisplayActiveFont,
+			fontSize = Layout.workout.segmentsDisplayFontSize
+		})
+		workout.segmentsDisplay[idx].anchorY = 0
 
-		print( "advancing Segment" )
-
-		if workout.curSegment.segment_type == 'ft' then 
-			local formattedTime = string.format( "%02d", Clock.getMinutes( workout.segClock.elapsedTime ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( workout.segClock.elapsedTime ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( workout.segClock.elapsedTime ) )
-			workout.segTimeDisp = display.newText({
-				parent 	= workout,
-				text 	= formattedTime,
-				x 		= centerX ,
-				y 		= centerY,
-				--font 	= 'Lato-Black.ttf',
-				font 	= 'digital-7-mono.ttf',
-				fontSize = 1
-				})
-			workout.anims[#workout.anims+1] = transition.to( workout.segTimeDisp, { size=100, duration=1200, onComplete=function() transition.to( workout.segTimeDisp, { size=20, duration=1000, x=workout.segClock.minDisplay.x+workout.segClock.minDisplay.contentWidth, y=workout.segClock.minDisplay.y, onComplete=function() display.remove( workout.segTimeDisp ); end } ) end } )
-		end
-
-		table.insert( workout.results, { 
-			segment_id		= workout.curSegment.id,
-			segment_type 	= workout.curSegment.segment_type,
-			segment_content = workout.curSegment.content,
-			round 			= workout.roundCount,
-			total_rounds	= workout.totalRoundCount,
-			time 			= workout.clock.elapsedTime,
-			})
-
-		workout.curSegmentIdx = workout.curSegmentIdx + 1
-		
-		if workout.curSegmentIdx > #workout.data.segments then 
-			workout:finish()
-		else
-			workout.curSegment = workout.data.segments[workout.curSegmentIdx]
-
-			workout.roundCount = 0
-
-			print( "Current Segment is now: " .. workout.curSegment.content )
-		
-			if workout.curSegment.segment_type == 'rest' then 
-				workout.actionBtn.label.text = 'Resting'
-				workout.actionBtn.onRelease = function() end
-				workout.roundDisp.text = "Resting"
-			elseif workout.curSegment.segment_type == 'ft' then 
-				workout.actionBtn.label.text = 'Advance'
-				workout.actionBtn.onRelease = function() workout:advanceSegment( true ) end
-				workout.roundDisp.text = "For Time"
-
-			elseif workout.curSegment.segment_type == 'amrap' or workout.curSegment.segment_type == 'rft' then 
-				workout.actionBtn.label.text = 'Count Round'
-				workout.actionBtn.onRelease = function() workout:countRound() end
-	
-				workout.roundDisp.isVisible = true
-
-				if workout.curSegment.segment_type == 'rft' then 
-					workout.roundDisp.preLabel = "Round: "
-					workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-				elseif workout.curSegment.segment_type == 'amrap' then
-					workout.roundDisp.preLabel = "Rounds: "
-					workout.roundDisp.postLabel = ""
-				end
-				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.roundCount .. workout.roundDisp.postLabel
-			else 
-				workout.actionBtn.label.text = 'Advance'
-				workout.actionBtn.onRelease = function() workout:advanceSegment() end
-				workout.roundDisp.isVisible = false
-
-			end
-
-			-- load curSegment clock stuff
-			local segStart, segEnd = 0, -1
-			if workout.curSegment.duration and workout.curSegment.duration > 0 then 
-				segStart = workout.curSegment.duration * 1000
-				segEnd = 0 
-			end
-			self.segClock:reset( segStart, segEnd )
-			self.segClock:start()
-		end
-
-		if settings.audio then audio.play( M.audio.round ) end
-
-		for i=1, #workout.data.segments do 
-			local curDisplay = workout.segmentsDisplay[i]
-			curDisplay.isVisible = false
+		-- now go through any remaining
+		for i=idx+1, #self.data.segments do
 			local font = 'Lato-Hairline.ttf'
-			if i == workout.curSegmentIdx then 
-				font = 'Lato.ttf'
-			end
-			workout.segmentsDisplay[i] = display.newText({
+			local y = self.segmentsDisplay[i-1].y + self.segmentsDisplay[i-1].contentHeight + Layout.workout.segmentsDisplayYOffset
+			self.segmentsDisplay[i] = display.newText({
 				parent 	= workout,
-				text 	= curDisplay.text,
-				x 		= curDisplay.x,
-				y 		= curDisplay.y,
+				text 	= self.data.segments[i].content,
+				width 	= screenWidth-20,
+				align 	= 'center',
+				y 		= y,
+				x 		= centerX,
 				font 	= font,
-				fontSize = curDisplay.size
+				fontSize = Layout.workout.segmentsDisplayFontSize
 				})
-			
-			workout.segmentsDisplay[i].y = workout.segmentsDisplay[i].y - workout.segmentsDisplay[i].contentHeight 
-			
-
-			if i <= workout.curSegmentIdx - 1 then 
-				workout.segmentsDisplay[i].isVisible = false
-			end
-			
-			curDisplay:removeSelf()
-			curDisplay = nil
+			self.segmentsDisplay[i].anchorY = 0
 		end
-		
 	end
+
+	function workout:recordResults( opts )
+		opts = opts or {}
+		local final = opts.final or false
+
+		if final then
+			table.insert( self.results, { 
+				result_type 	= 'workout',
+				tmp_id 			= self.slug .. '_' .. osTime(),
+				workout_id		= self.slug,
+				total_rounds	= self.totalRoundCount,
+				total_time		= self.clock.elapsedTime,
+				started_at		= self.startedAt,
+				ended_at		= self.endedAt,
+				summary_title	= self.summaryTitle,
+				workout_type	= self.data.workout_type,
+				cover_img		= self.data.cover_img 
+				})
+		else
+			local unit = 'ms'
+			local value = self.clock.elapsedTime - self.lastResultTime
+			self.lastResultTime = self.clock.elapsedTime
+
+			if self.curSegment.segment_type == 'rest' then return end
+			if value == 0 then return end
+
+			local content = self.curSegment.content
+			if self.curSegment.segment_type == 'accumulate' or self.curSegment.segment_type == 'amrap' or self.curSegment.segment_type == 'rft' then 
+				content = "Round: " .. self.curSegment.roundCount
+			end
+			if self.curSegment.segment_type == 'emom' then 
+				content = "Round: " .. self.curSegment.cycleCount
+			end
+
+			table.insert( self.results, { 
+				result_type 	= 'segment',
+				segment_id		= self.curSegment.id,
+				segment_type 	= self.curSegment.segment_type,
+				segment_content = content,
+				value 			= value,
+				unit 			= unit,
+				recorded_at 	= osDate( "%Y-%m-%d %H:%M:%S" )
+				})
+		end
+	end
+
+	function workout:start()
+		if settings.audio then audio.play( self.audio.go ) end
+		self.startedAt = osDate( "%Y-%m-%d %H:%M" )
+		self.isVisible = true
+		self.clock:start()
+		self.segClock:start()
+	end
+
+	function workout:startAccumulate()
+		self.segClock:start()
+		self.lastResultTime = self.clock.elapsedTime
+		self.actionBtn.label.text = 'Stop'
+		self.actionBtn.onRelease = function() self:stopAccumulate() end
+	end
+
+	function workout:stopAccumulate()
+		self.segClock:pause() 
+		self.curSegment.roundCount = self.curSegment.roundCount + 1
+		self:recordResults()
+		self.actionBtn.label.text = 'Start'
+		self.actionBtn.onRelease = function() self:startAccumulate() end
+	end
+
+	function workout:tick()
+		-- for now this is just a listener for TABATA
+		-- ToDo: may add halfway sound effects, scripted sounds, etc..
+		if not( self.curSegment.segment_type == 'tabata' ) then return end 
+		if self.segClock.elapsedTime >= 20 * 1000 then 
+			self.infoDisplay.text = 'Rest'
+		end
+	end
+
+	function workout:timesUp()
+		print( "Segment Clock Expired! " )
+		if self.curSegment.segment_type == 'emom' or self.curSegment.segment_type == 'tabata' then 
+			self.curSegment.cycleCount = self.curSegment.cycleCount + 1
+			if workout.curSegment.cycleCount >= workout.curSegment.repeat_count + 1 then 
+				self:advanceSegment( { record=false } ) 
+			else
+				self.lastResultTime = self.clock.elapsedTime
+				self:initActionBtn()
+				self:initInfoDisplay()
+				self:initSegClock()
+				self.segClock:start()
+			end
+		elseif self.curSegment.segment_type == 'accumulate' then 
+			self:advanceSegment( { record=true } )
+		else
+			self:advanceSegment( { record=false } )
+		end
+	end
+
+	
 
 	function M:loadData( slug )
 		local function getData( e )
+			local data
 			if e.isError then
 				--native.showAlert( 'Connection Error', e.response .. "\nUsing local data.", { 'Ok' } )
 				local response = require( 'local_data.workouts.' .. workout.slug )
-				M.data = json.decode( response )
+				data = json.decode( response )
 			else
-				M.data =  json.decode( e.response )
+				data =  json.decode( e.response )
 			end
-			workout.data = M.data
-			table.sort( workout.data.segments, function(a,b) return a.seq < b.seq end )
-
+			workout.data = data
+			workout.header.title.text = workout.data.title
 			workout.summaryTitle = workout.data.title 
 
+			table.sort( workout.data.segments, function(a,b) return a.seq < b.seq end )
+
+			-- initialize the workout clock
+			workout:initClock()
+
+			-- set curSegment
 			workout.curSegment = workout.data.segments[workout.curSegmentIdx]
 
-			-- cycle count used for auto-advance segments like emom & tabata
-			workout.curSegment.cycleCount = 1
+			-- have to initialize segment variables on load
+			-- initialize cycle count used for auto-advance segments like emom & tabata
+			workout:initCurSegment()
 
-			workout.header = UI:setHeader({
-				parent 		= workout,
-				title 		= workout.data.title
-				})
-
-			if workout.data.cover_img then 
-				local name = workout.data.cover_img:match( "([^/]+)$" )
-				display.loadRemoteImage( workout.data.cover_img, 'GET', function(e) workout.bg = e.target;workout.bg.anchorY=0;workout:insert( workout.bg );workout.bgDimmer=display.newRect( workout, centerX, 50, screenWidth, screenHeight );workout.bgDimmer.anchorY=0;workout.bgDimmer.fill={ 0, 0, 0, 0.5 };workout.bgDimmer:toBack(); workout.bg:toBack(); end, name, centerX, 50 )
-			else
-				workout.bg = display.newRect( workout, centerX, 50, screenWidth, screenHeight )
-				workout.bg.fill = { type = 'image', filename = "assets/images/bgs/bg" .. math.random(1,6) .. ".png" }
-				workout.bg.anchorY = 0
-				workout.bgDimmer = display.newRect( workout, centerX, 50, screenWidth, screenHeight )
-				workout.bgDimmer.anchorY = 0
-				workout.bgDimmer.fill = { 0, 0, 0, 0.5 }
-				workout.bgDimmer:toBack()
-				workout.bg:toBack()
-			end
-
-			-- primary clock pretty much always runs up
-			-- because we're disabling screen-lock, we'll cap all workouts out 
-			-- at 2hrs max for now....
-			local clockStart, clockEnd = 0, ( 1000*120*60 )
-
-			-- Run primary clock down if we have a one-segment amrap (e.g. cindy)
-			if #workout.data.segments == 1 and workout.curSegment.segment_type == 'amrap' then 
-				clockStart = workout.curSegment.duration * 1000
-				workout.curSegment.duration = nil
-				clockEnd = 0 
-			end
-
-			workout.clock = Clock:new({
-				parent 		= workout,
-				y 			= 60,
-				fontSize 	= Theme.clockFontSize,
-				startAt 	= clockStart,
-				endAt 		= clockEnd,
-				showHunds 	= true
-				})
-			workout.clock.anchorY = 0
-
-			workout.sep = display.newLine( workout, 25, workout.clock.y + workout.clock.contentHeight, screenWidth-25, workout.clock.y + workout.clock.contentHeight )
-			workout.sep.alpha = 0.0005
-
-			workout.roundDisp = display.newText({
-				parent 	= workout,
-				text  	= "Round: " .. workout.roundCount,
-				x 		= 25,
-				y 		= workout.sep.y + 18,
-				font 	= 'digital-7-mono.ttf',
-				fontSize = 32,
-				})
-			workout.roundDisp.anchorX = 0
-			workout.roundDisp.isVisible = false
-			
-			if workout.curSegment.segment_type == 'rft' then 
-				workout.roundDisp.isVisible = true
-				workout.roundDisp.preLabel = "Round: "
-				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.roundCount .. workout.roundDisp.postLabel
-			elseif workout.curSegment.segment_type == 'emom' then 
-				workout.roundDisp.isVisible = true
-				workout.roundDisp.preLabel = "Round: "
-				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
-			elseif workout.curSegment.segment_type == 'tabata' then 
-				workout.roundDisp.isVisible = true
-				workout.roundDisp.preLabel = "Tabata: "
-				workout.roundDisp.postLabel = "/" .. workout.curSegment.repeat_count
-				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.curSegment.cycleCount .. workout.roundDisp.postLabel
-			elseif workout.curSegment.segment_type == 'amrap' then
-				workout.roundDisp.isVisible = true
-				workout.roundDisp.preLabel = "Rounds: "
-				workout.roundDisp.postLabel = ""
-				workout.roundDisp.text = workout.roundDisp.preLabel .. workout.roundCount
-			elseif workout.curSegment.segment_type == 'ft' then 
-				workout.roundDisp.isVisible = true
-				workout.roundDisp.text = 'For Time'
-			end
-
-			-- similar to primary clock, but we'll let segment clock run forever
-			-- since workout clock will terminate workout, and user may not want
-			-- to micro-manage rounds
-			local segStart, segEnd = 0, -1
-			if workout.curSegment.duration and workout.curSegment.duration > 0 then 
-				segStart = workout.curSegment.duration * 1000
-				segEnd = 0 
-			end
-
-			if workout.curSegment.segment_type == 'emom' or workout.curSegment.segment_type == 'tabata' then 
-				segStart = workout.curSegment.repeat_interval * 1000
-				segEnd = 0 
-			end 
-
-			workout.segClock = Clock:new({
-				parent 		= workout,
-				y 			= workout.sep.y + 18,
-				fontSize 	= 32,
-				startAt 	= segStart,
-				endAt 		= segEnd,
-				fontFill 	= { 1 },
-				showHunds 	= true
-				})
-			workout.segClock.x = screenWidth - 25
-			workout.segClock.anchorX = 1
-
-			-- single-segment for time (e.g. Fran) doesn't need a segment clock
-			if #workout.data.segments == 1 and workout.curSegment.segment_type == 'ft' then 
-				workout.segClock.isVisible = false 
-			end
-
-			workout.sep = display.newLine( workout, 25, workout.segClock.y + 18, screenWidth-25, workout.segClock.y + 18 )
-			workout.sep.alpha = 0.5
-
-			-- workout.overview = display.newText({
-			-- 	parent 	= workout,
-			-- 	text 	= workout.data.overview_title,
-			-- 	width 	= screenWidth-20,
-			-- 	x 		= centerX,
-			-- 	y 		= workout.sep.y + 11,
-			-- 	font 	= 'Lato-Black.ttf',
-			-- 	fontSize 	= 25,
-			-- 	align 		= 'center'
-			-- 	})
-			-- workout.overview.anchorY = 0
-
-			workout.activeSegY =  workout.sep.y + workout.sep.contentHeight + 40
-			local curY = workout.activeSegY
-
-			-- show all the segments in te middle
-
-			workout.segmentsDisplay = {}
-			
-			for i=1, #workout.data.segments do
-				local font = 'Lato-Hairline.ttf'
-				if i == workout.curSegmentIdx then 
-					font = 'Lato.ttf'
-				end
-				local selectedFont = 'Lato.ttf'
-				workout.segmentsDisplay[i] = display.newText({
-					parent 	= workout,
-					text 	= workout.data.segments[i].content,
-					width 	= screenWidth-20,
-					align 		= 'center',
-					y 		= curY,
-					x 		= centerX,
-					font 	= font,
-					fontSize = 25
-					})
-
-				workout.segmentsDisplay[i].fill = { 1, 1, 1}
-				workout.segmentsDisplay[i].anchorY = 0
-				
-				curY = curY + workout.segmentsDisplay[i].contentHeight + 10
-
-			end
-
-			workout.actionBtn = Btn:new({
-				parent 		= workout,
-				label 		= 'Action',
-				height  	= screenHeight * 0.15,
-				x 			= centerX,
-				y 			= screenHeight - ( screenHeight * 0.125 ),
-				bgColor = { 0, 0.33, 0 },
-				})
-
-
-			-- no action button for tabatas
-			if workout.curSegment.segment_type == 'tabata' then
-				workout.actionBtn.isVisible = false
-			end
-
-			-- if workout is one-segment AMRAP and time is up
-			-- or if primary clock caps-out
-			-- kill the workout
 			workout.clock:addEventListener( 'timesUp', function() workout:finish() end )
-			
-			-- if segment has a duration, advance when segment expires
-			workout.segClock:addEventListener( 'timesUp', function() workout:advanceSegment() end )
+			workout.segClock:addEventListener( 'timesUp', workout )
+			workout.segClock:addEventListener( 'tick', workout )
 
-
-
-			if workout.curSegment.segment_type == 'amrap' or workout.curSegment.segment_type == 'rft' then
-				workout.actionBtn.label.text = 'Count Round'
-				workout.actionBtn.onRelease = function() workout:countRound() end
-			elseif workout.curSegment.segment_type == 'emom' then 
-				workout.actionBtn.label.text = 'Record EMOM'
-				workout.actionBtn.onRelease = function() workout:recordEmom() end
-			else
-				workout.actionBtn.label.text = 'Advance'
-				workout.actionBtn.onRelease = function() workout:advanceSegment( true ) end
-			end
-
-			workout.isVisible = false
-
+			-- Everything's setup. Kick this mofo off.
 			-- now, we can make the count in a setting: 0, 3, 5, 10
 			workout.countInCount = settings.countIn
-			if settings.countIn > 0 then
-				workout.countInTimer = timer.performWithDelay( 1000, countIn, settings.countIn + 1 )
-			else
-				workout:start()
-			end
+			local delay = 1000 
+			if settings.countIn < 1 then delay = 100 end
+			workout.countInTimer = timer.performWithDelay( delay, countIn, settings.countIn + 1 )
 		end
-
-
-
 
 		local url = 'http://localhost:3003/workouts/' .. workout.slug .. '.json'
 		network.request( url, 'GET', getData )
@@ -603,19 +561,7 @@ function M:new( opts )
 
 	self:loadData( slug )
 
-
-	function workout:cleanup()
-		workout.clock:pause()
-		workout.clock:cleanup()
-		-- ToDo: dispose of any audio....
-		for i=1, #workout.anims do 
-			transition.cancel( workout.anims[i] )
-		end
-		display.remove( self )
-	end
-
 	return workout 
 end
-
 
 return M

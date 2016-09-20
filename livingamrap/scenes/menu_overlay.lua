@@ -11,6 +11,7 @@ local Composer = require( "composer" )
 local scene = Composer.newScene()
 
 local Btn = require( 'ui.btn' )
+local Theme = require( 'ui.theme' )
 
 
 ---------------------------------------------------------------------------------
@@ -32,29 +33,31 @@ function scene:show( event )
 
 	if event.phase == "will" then
 
-		panel.frame = display.newRoundedRect( group, screenWidth, 50, screenWidth * 0.66, 300, 6 )
+		local Layout = require( 'ui.layout_' .. screenOrient )
+
+		panel.frame = display.newRoundedRect( group, Layout.width, 50, Layout.width * 0.66, 300, 6 )
 		panel.frame.anchorX, panel.frame.anchorY = 1, 0
-		panel.frame.fill = { 0.15 }
-		panel.frame.alpha = 0.85
+		panel.frame.fill = Theme.colors.whiteGrey
 
 		panel.frame.stroke = {type="image", filename="assets/images/brushes/blur_brush1x4.png"}
 		panel.frame.strokeWidth = 6
 		panel.frame:setStrokeColor( 0.25, 0.25, 0.25, 0.5 )
 		
-		local y = 80
+		local y = 70
 
 		ui.home_link = display.newText({
 			parent 	= panel,
 			text 	= 'Home',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.home_link.anchorX = 0
+		ui.home_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -63,13 +66,14 @@ function scene:show( event )
 			text 	= 'Results',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.results_link.anchorX = 0
+		ui.results_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -78,13 +82,14 @@ function scene:show( event )
 			text 	= 'Settings',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.settings_link.anchorX = 0
+		ui.settings_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -93,13 +98,14 @@ function scene:show( event )
 			text 	= 'Workouts',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.workouts_link.anchorX = 0
+		ui.workouts_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -108,13 +114,14 @@ function scene:show( event )
 			text 	= 'Movements',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.movements_link.anchorX = 0
+		ui.movements_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -123,13 +130,14 @@ function scene:show( event )
 			text 	= 'Account',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.account_link.anchorX = 0
+		ui.account_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, screenWidth * 0.33 + 40, y, screenWidth-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -138,10 +146,11 @@ function scene:show( event )
 			text 	= 'Logout',
 			font 	= 'Lato.ttf',
 			fontSize 	= 16,
-			x 		= screenWidth * 0.33 + 40,
+			x 		= Layout.width * 0.33 + 40,
 			y 		= y
 			})
 		ui.logout_link.anchorX = 0
+		ui.logout_link.fill = Theme.colors.dkGrey
 
 		group:insert( panel )
 

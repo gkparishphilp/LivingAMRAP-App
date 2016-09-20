@@ -27,24 +27,32 @@ local data, data_table
 -- Called when the scene's view does not exist:
 function scene:create( event )
 	local group = self.view
-
-	ui.bg = UI:setBg({
-		parent 		= group,
-		fill 		= { type = 'image', filename = 'assets/images/bgs/bg5.png' },
-		y 			= centerY + Theme.headerHeight
-		})
-
-	ui.header = UI:setHeader({
-		parent 	= group,
-		title 	= 'Workouts'
-		})
-
 end
 
 function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		local Layout = require( 'ui.layout_' .. screenOrient )
+
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height - Layout.headerHeight,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.centerY,
+			fillScale 	= 1,
+			fill 		= Layout.workouts_index.bgFill,
+			})
+
+		ui.header = UI:setHeader({
+			parent 	= group,
+			title 	= 'Workouts',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight
+			})
 
 		local function getData( e )
 			if e.isError then
@@ -89,14 +97,14 @@ function scene:show( event )
 			local slug = e.target.params.slug
 			Composer.setVariable( 'objType', 'workout' )
 			Composer.setVariable( 'objSlug', slug )
-			Composer.gotoScene( "scenes.workout_preview" )
+			Composer.gotoScene( "scenes.workouts_show" )
 		end
 
 		data_table = Widget.newTableView({
-			left 			= 0,
-			top 			= 80,
-			height 			= screenHeight - 80,
-			width 			= screenWidth,
+			left 			= Layout.dataTableHpad,
+			top 			= Layout.headerHeight,
+			height 			= Layout.height - Layout.headerHeight,
+			width 			= Layout.width - 2*Layout.dataTableHpad,
 			hideBackground  = true,
 			onRowRender 	= onRowRender,
 			onRowTouch 		= onRowTouch,
@@ -113,7 +121,7 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
-		data_table:removeSelf()
+		display.remove( data_table )
 	end
 	
 end

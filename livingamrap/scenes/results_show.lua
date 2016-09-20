@@ -7,47 +7,64 @@
 local Composer = require( "composer" )
 local scene = Composer.newScene()
 
+local Widget = require( "widget" )
+Widget.setTheme( "widget_theme_android_holo_dark" )
+
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
+local Colors = require( 'ui.colors' )
 local UI = require( 'ui.factory' )
-local Workout = require( 'objects.workout' )
+local json = require( 'json' )
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
 ---------------------------------------------------------------------------------
 
 local ui = {}
-local workout
+local data
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
 	local group = self.view
-
 end
 
 function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
-		-- can't change device orientation & force redraw/restart of workout
-		reOrientEnabled = false
+		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		local slug = Composer.getVariable( 'objSlug' )
-		workout = Workout:new({
-			parent 	= group,
-			slug 	= slug
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height - Layout.headerHeight,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.centerY + Layout.headerHeight,
+			fill 		= { 0 },
 			})
 
-		-- ui.go_btn = Btn:new({
-		-- 	parent 	= group,
-		-- 	label 	= 'Go',
-		-- 	width 	= 50,
-		-- 	height 	= 50,
-		-- 	bgColor = { 0, 1, 0 },
-		-- 	y 	= screenHeight - 50,
-		-- 	x 	= screenWidth - 50,
-		-- 	onRelease = function() timer.cancel( workout.countInTimer ); workout:start(); display.remove( ui.go_btn ) end
-		-- 	})
+		ui.header = UI:setHeader({
+			parent 	= group,
+			title 	= 'Workout Result',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight,
+			backTo 	= Composer.getSceneName( 'previous' )
+			})
+
+		local slug = Composer.getVariable( 'objSlug' )
+
+		ui.overview_title = display.newText({
+			parent 		= group,
+			text 		= slug,
+			x 			= Layout.centerX,
+			y 			= Layout.centerY,
+			fontSize 	= 34,
+			font 		= Theme.fonts.black,
+			align 		= "center",
+			})
+
 	end
 	
 end
@@ -56,8 +73,8 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
-		workout:cleanup()
-		reOrientEnabled = true
+		display.remove( ui.overview_title )
+		display.remove( ui.bg )
 	end
 	
 end

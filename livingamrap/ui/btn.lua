@@ -41,6 +41,12 @@
 -- strokeColorPressed
 -- bgColorPressed
 
+local centerX = display.contentCenterX
+local centerY = display.contentCenterY
+local screenWidth = display.contentWidth
+local screenHeight = display.contentHeight
+local screenOrient = system.orientation
+
 local Theme = require( 'ui.theme' )
 
 
@@ -154,6 +160,8 @@ function M:new( opts )
 		btn.imageIconPressed.x = opts.iconX
 		btn.imageIconPressed.y = opts.iconY
 		btn.imageIconPressed.isVisible = false
+	else
+		btn.imageIconPressed = btn.imageIcon
 	end
 
 	function btn:touch( event )

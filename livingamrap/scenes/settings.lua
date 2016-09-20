@@ -23,69 +23,68 @@ local Debug = require( "utilities.debug" )
 ---------------------------------------------------------------------------------
 
 local ui = {}
-local countin_field
+local countin_field, volume_slider
+
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
 	local group = self.view
-
-	ui.bg = UI:setBg({
-		parent 		= group,
-		fill 		= { 0 },
-		y 			= centerY + Theme.headerHeight
-		})
-
-	ui.header = UI:setHeader({
-		parent 	= group,
-		title 	= 'Settings'
-		})
-
 end
 
 function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		local Layout = require( 'ui.layout_' .. screenOrient )
+
+		reOrientEnabled = false
+
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height - Layout.headerHeight,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.centerY + Layout.headerHeight,
+			fill 		= { 0 },
+			})
+
+		ui.header = UI:setHeader({
+			parent 	= group,
+			title 	= 'Results',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight
+			})
+
 		local settings = FileUtils.loadTable( "settings.json" )
 		-- have to initialize settings in case file doesn't exist
 		settings = settings or default_settings
 
-		print( "settings: " )
-		Debug.printTable( settings )
 
-		ui.audioLabel = display.newText( group, "Sound?", 50, 80, 'Lato.ttf', 18 )
-		ui.audioLabel.anchorX, ui.audioLabel.anchorY = 0, 0
-		-- Create a default on/off switch (using widget.setTheme)
-		ui.audio_switch = Widget.newSwitch({
-		    left = 230,
-		    top = 75,
-		    style = 'checkbox',
-		    initialSwitchState = settings.audio,
-		    -- onPress = audio_switch_handler,
-		    -- onRelease = audio_switch_handler,
-		})
-		group:insert( ui.audio_switch )
-
-		ui.volumeLabel = display.newText( group, "Volume", 50, 140, 'Lato.ttf', 18 )
+		ui.volumeLabel = display.newText( group, "Volume", 50, 80, 'Lato.ttf', 18 )
 		ui.volumeLabel.anchorX, ui.volumeLabel.anchorY = 0, 0
-		-- Create a default on/off switch (using widget.setTheme)
-		ui.volume_slider = Widget.newSlider({
-		    left 	= 150,
-		    top 	= 135,
-		    width 	= 150,
-		    value 	= settings.audioVolume,
-		    -- onPress = audio_switch_handler,
-		    -- onRelease = audio_switch_handler,
-		})
-		group:insert( ui.volume_slider )
 
-		ui.countinLabel = display.newText( group, "Count In From", 50, 200, 'Lato.ttf', 18 )
+		volume_slider = Widget.newSlider({
+		    left 	= 150,
+		    top 	= 75,
+		    width 	= 150,
+		    value 	= tonumber( settings.audioVolume ) * 100,
+		})
+		group:insert( volume_slider )
+
+		ui.countinLabel = display.newText( group, "Count In From", 50, 130, 'Lato.ttf', 18 )
 		ui.countinLabel.anchorX, ui.countinLabel.anchorY = 0, 0
 
-		countin_field = native.newTextField( 260, 210, 50, 25 )
-		countin_field.text = settings.countIn
-		countin_field.inputType = 'number'
-
+		countin_field = TextField:new({
+			parent 		= group,
+			cornerRadius 	= 4,
+			width 		= 50,
+			height 		= 30,
+			x 			= 260,
+			y 			= 140,
+			text 		= settings.countIn
+			})
 
 	end
 	
@@ -95,16 +94,20 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		
+		reOrientEnabled = true
+
 		local settings = {
-			audio 			= ui.audio_switch.isOn,
-			audioVolume 	= ui.volume_slider.value,
-			countIn 		= tonumber( countin_field.text )
+			audioVolume 	= tonumber( volume_slider.value ) / 100.0,
+			countIn 		= tonumber( countin_field.textField.text )
 		}
 
-		FileUtils.saveTable( settings, "settings.json" )
 
-		display.remove( ui.audio_switch )
-		display.remove( ui.volume_slider )
+		Debug.printTable( settings )
+
+		FileUtils.saveTable( settings, "settings.json" )
+		
+		display.remove( volume_slider )
 		display.remove( countin_field )
 
 	end

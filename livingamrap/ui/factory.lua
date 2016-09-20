@@ -5,26 +5,26 @@
 local Composer = require( 'composer' )
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
-local Colors = require( 'ui.colors' ) 
 
 local bgDefaults = {
 	x 			= centerX,
 	y 			= centerY,
 	width 		= screenWidth,
 	height 		= screenHeight,
-	fill 		= Colors.ltGray,
+	fill 		= Theme.colors.ltGray,
 }
 
 local headerDefaults = {
+	x 			= centerX,
+	y 			= 0,
+	backLabel 	= 'back',
 	backTo 		= 'scenes.home',
-	width 		= screenWidth,
-	height 		= Theme.headerHeight,
 	backBtn 	= true,
 	fontSize 	= 26,
 	fontColor 	= { 0.95, 0.95, 0.95, 1 },
-	bgColor 	= Colors.mdGrey,
-	btnColor 	= Colors.green,
-	borderColor = Colors.dkGrey
+	bgColor 	= Theme.colors.mdGrey,
+	btnColor 	= Theme.colors.green,
+	borderColor = Theme.colors.dkGrey
 }
 
 local M = {}
@@ -33,6 +33,7 @@ local M = {}
 
 
 function M:setBg( opts )
+
 	-- uses fills for images, etc. see: 
 	-- https://coronalabs.com/blog/2013/11/07/tutorial-repeating-fills-in-graphics-2-0/
 	
@@ -44,6 +45,7 @@ function M:setBg( opts )
 			opts[key] = bgDefaults[key]
 		end
 	end
+
 
 	bg = display.newRect( opts.x, opts.y, opts.width, opts.height )
 	bg.x = opts.x
@@ -101,37 +103,41 @@ function M:setHeader( opts )
 		opts.parent:insert( header )
 	end
 
-	header.bg = display.newRect( header, centerX, opts.height/2, screenWidth, opts.height )
+	header.bg = display.newRect( header, opts.x, opts.y, opts.width, opts.height )
+	header.bg.anchorY = 0
 	header.bg.fill = opts.bgColor
 
 	header.back_btn = Btn:new({
 		parent 			= header,
-		label 			= 'Back',
+		label 			= opts.backLabel,
 		labelColor  	= { 0 } ,
-		bgColor 		= Colors.red,
-		bgColorPressed 	= Colors.dkRed,
+		bgColor 		= Theme.colors.red,
+		bgColorPressed 	= Theme.colors.dkRed,
 		width			= 30,
 		height			= 30,
 		strokeWidth 	= 1,
 		x				= 20,
-		y				= opts.height/2,
-		font 			= 'Lato.ttf',
+		y				= opts.y + opts.height/2,
+		font 			= Theme.font,
 		fontSize		= 12,
 		onRelease 		= function() Composer.gotoScene( opts.backTo ) end
 	})
 
 	header.menu_btn = Btn:new({
 		parent 			= header,
-		imageIcon 		= '/assets/images/menu-icon.png',
+		--label 			= '...',
+		imageIcon 		= 'assets/images/menu-icon.png',
 		labelColor  	= opts.fontColor,
-		bgColor 		= Colors.blue,
-		bgColorPressed 	= Colors.dkBlue,
+		bgColor 		= Theme.colors.blue,
+		bgColorPressed 	= Theme.colors.dkBlue,
 		width			= 30,
 		height			= 30,
 		strokeWidth 	= 1,
-		x				= screenWidth-20,
-		y				= opts.height/2,
-		fontSize		= 14,
+		x				= opts.width - 20,
+		y				= opts.y + opts.height/2,
+		fontSize		= 36,
+		labelY 			= opts.y + opts.height/4,
+		--onRelease 		= function() if Composer.getVariable( 'overlay' ) then Composer.hideOverlay( 'slideRight' ); else Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ); end end
 		onRelease 		= function() if Composer.getVariable( 'overlay' ) then transition.to( header.menu_btn.imageIcon, { rotation = 0 } ); Composer.hideOverlay( 'slideRight' ) else transition.to( header.menu_btn.imageIcon, { rotation = 90 } ); Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
 	})
 
@@ -139,16 +145,16 @@ function M:setHeader( opts )
 	header.title = display.newText({
 		parent 		= header, 
 		text 		= opts.title,
-		x 			= screenWidth - 50, 
-		y 			= opts.height/2,
-		font 		= 'Lato-Light.ttf',
+		x 			= opts.width - 50, 
+		y 			= opts.y + opts.height/2,
+		font 		= Theme.fonts.light,
 		fontSize 	= opts.fontSize 
 	})
 	header.title.fill = opts.fontColor
 	header.title.anchorX = 1
 
-	header.border = display.newLine( header, 0, opts.height, screenWidth, opts.height )
-	--ui.header.border.stroke = {type="image", filename="assets/images/brushes/blur_brush1x4.png"}
+	header.border = display.newLine( header, 0, opts.y + opts.height, screenWidth, opts.y + opts.height )
+	--header.border.stroke = {type="image", filename="assets/images/brushes/blur_brush1x4.png"}
 	header.border:setStrokeColor( unpack( opts.borderColor ) )
 	header.border.strokeWidth = 1
 

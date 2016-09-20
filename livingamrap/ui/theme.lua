@@ -1,7 +1,24 @@
+
+-- just fonts and colors and some defaults
+-- the rest is in layouts
+
+
 local device = require( 'utilities.device' )
 local colors = require( 'ui.colors' )
 
+local fonts = { 
+	regular 	= 'Lato.ttf',
+	light 		= 'Lato-Light.ttf',
+	bold 		= 'Lato-Bold.ttf',
+	black 		= 'Lato-Black.ttf',
+	hairline 		= 'Lato-Hairline.ttf',
+}
+
 local T = {
+	colors 	= colors,
+	
+	font 		= 'Lato.ttf',
+	fonts 		= fonts,
 
 	buttons 	= {
 		width 		= screenWidth * 0.66,
@@ -16,21 +33,7 @@ local T = {
 			bgPressed 	= colors.dkPurple,
 		},
 	},
-	
-	headerHeight 	= 50,
-	clockFontSize 	= screenWidth / 3,
-
-	font 		= 'Lato',
-	fonts 		= { 
-		regular 	= 'Lato',
-		light 		= 'Lato-Light',
-		bold 		= 'Lato-Bold',
-		black 		= 'Lato-Black',
-		hairline 		= 'Lato-Hairline',
-	},
-	
 }
-
 
 
 function T.colorize( color )

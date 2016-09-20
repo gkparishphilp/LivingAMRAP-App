@@ -11,7 +11,7 @@ local scene = Composer.newScene()
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
 local UI = require( 'ui.factory' )
-local Workout = require( 'objects.workout' )
+local Workout = require( 'objects.new_workout' )
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -32,7 +32,7 @@ function scene:show( event )
 	if event.phase == "will" then
 		workout = Workout:new({
 			parent 	= group,
-			slug 	= 'helen'
+			slug 	= 'test-script-rft-buy-in'
 			})
 	end
 	

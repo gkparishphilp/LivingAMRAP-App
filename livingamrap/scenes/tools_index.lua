@@ -20,41 +20,57 @@ local json = require( 'json' )
 ---------------------------------------------------------------------------------
 
 local ui = {}
-local server_data
-
-local function getServerData( e )
-	server_data =  json.decode( e.response )
-
-	ui.header.title.text = server_data.title
-end
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
 	local group = self.view
-
-		ui.bg = UI:setBg({
-		parent 		= group,
-		image 			= 'assets/images/bgs/bg1.png',
-		--imgWidth 		= ,
-		--imgHeight 	= ,
-		y 		= centerY + Theme.headerHeight
-		})
-
-	ui.header = UI:setHeader({
-		parent 	= group,
-		title 	= 'Movement',
-		backTo 	= Composer.getSceneName( 'previous' )
-		})
-
 end
 
 function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		local url = 'http://localhost:3003/movements/' .. event.params.slug .. '.json'
-		network.request( url, 'GET', getServerData )
+		ui.bg = UI:setBg({
+			parent 		= group,
+			width 		= Layout.width,
+			height 		= Layout.height - Layout.headerHeight,
+			x 			= Layout.width * 0.5,
+			y 			= Layout.centerY + Layout.headerHeight,
+			fillScale 	= 1,
+			fill 		= { type = 'image', filename = 'assets/images/bgs/bg2.png' },
+			})
+
+		ui.header = UI:setHeader({
+			parent 	= group,
+			title 	= 'Tools',
+			x 		= Layout.centerX,
+			y 		= 0,
+			width 	= Layout.width,
+			height 	= Layout.headerHeight,
+			backTo 	= Composer.getSceneName( 'previous' )
+			})
+
+		ui.btn1 = Btn:new({
+			parent 	= group,
+			y 		= 100,
+			label 	= "% Max Calculator",
+			})
+
+		ui.btn2 = Btn:new({
+			parent 	= group,
+			y 		= 160,
+			label 	= "Max Rep Calculator",
+			})
+
+		ui.btn3 = Btn:new({
+			parent 	= group,
+			y 		= 220,
+			label 	= "Calorie Calculator",
+			})
+
+
 
 
 
