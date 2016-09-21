@@ -141,11 +141,21 @@ function M:setHeader( opts )
 		onRelease 		= function() if Composer.getVariable( 'overlay' ) then transition.to( header.menu_btn.imageIcon, { rotation = 0 } ); Composer.hideOverlay( 'slideRight' ) else transition.to( header.menu_btn.imageIcon, { rotation = 90 } ); Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
 	})
 
+	header.connectionIndicator = display.newRoundedRect( header, opts.width - 50, opts.y + opts.height/2, 12, 12, 6 )
+	header.connectionIndicator.fill = { type='image', filename='assets/images/' .. connectionStatus .. '.png' }
+
+	function header:updateConnectionIndicator()
+		self.connectionIndicator.fill = { type='image', filename='assets/images/' .. connectionStatus .. '.png' }
+	end
+
+	
+
+
 
 	header.title = display.newText({
 		parent 		= header, 
 		text 		= opts.title,
-		x 			= opts.width - 50, 
+		x 			= opts.width - 75, 
 		y 			= opts.y + opts.height/2,
 		font 		= Theme.fonts.light,
 		fontSize 	= opts.fontSize 

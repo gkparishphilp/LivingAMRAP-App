@@ -53,6 +53,8 @@ M.getHundredths = get_hundredths
 function M.humanizeTime( opts )
 	opts = opts or {} 
 	local time = opts.time
+	if opts.secs then time = time * 1000 end
+
 	return string.format( "%02d", get_minutes( time ) ) .. ':' .. string.format( "%02d", get_seconds( time ) ) .. '.' .. string.format( "%02d", get_hundredths( time ) )
 end
 

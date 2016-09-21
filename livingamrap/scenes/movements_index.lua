@@ -56,12 +56,17 @@ function scene:show( event )
 			})
 
 		local function getData( e )
-			if e.isError then
-				--native.showAlert( 'Connection Error', e.response .. "\nUsing local data.", { 'Ok' } )
-				local response = require( 'local_data.movements' )
+			
+			connectionStatus = 'online'
+			ui.header:updateConnectionIndicator()
+			data =  json.decode( e.response )
+
+			if e.isError or data == nil then
+				connectionStatus = 'offline'
+				ui.header:updateConnectionIndicator()
+				
+				local response = require( 'local_data.workouts' )
 				data = json.decode( response )
-			else
-				data =  json.decode( e.response )
 			end
 
 			for i = 1, #data do

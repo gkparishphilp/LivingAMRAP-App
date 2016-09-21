@@ -10,6 +10,8 @@ centerY = display.contentCenterY
 screenWidth = display.contentWidth
 screenHeight = display.contentHeight
 
+connectionStatus = 'offline'
+
 screenOrient = system.orientation
 if screenOrient == 'landscapeRight' then screenOrient = 'landscape' end
 if screenOrient == 'landscapeLeft' then screenOrient = 'landscape' end

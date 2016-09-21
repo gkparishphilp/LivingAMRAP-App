@@ -16,6 +16,7 @@ local Clock = require( 'objects.clock' )
 local json = require( 'json' )
 local FileUtils = require( "utilities.file" )
 local TextBox = require( "ui.text_box" )
+local TextField = require( "ui.text_field" )
 
 local Widget = require( 'widget' )
 Widget.setTheme( "widget_theme_android_holo_dark" )
@@ -29,7 +30,7 @@ local Debug = require( 'utilities.debug' )
 local ui = {}
 local summaryGroup
 local summaryData
-local all_results, results, noteBox, rxSwitch
+local all_results, results, noteBox, rxSwitch, valueField
 
 
 local function finalizeResults() 
@@ -39,11 +40,25 @@ local function finalizeResults()
 	end
 
 	local jsonResults = {}
+	local unit = 'secs'
 
 	results[#results].notes = noteBox.textBox.text
 	results[#results].rx = tostring( rxSwitch.isOn )
+	results[#results].unit = unit
 
-	table.insert( all_results, results )
+	if summaryData.workout_type == 'amrap' then
+		results[#results].sub_value = valueField.textField.text
+		results[#results].unit = 'rds'
+	elseif summaryData.workout_type == 'strength' then 
+		results[#results].value = valueField.textField.text
+		results[#results].unit = 'lbs'
+	end
+
+	-- Only save last 5 results locally to device
+	-- if user has acct, save 30
+	-- if user pays, save all-time?
+	if #all_results == 5 then table.remove( all_results ) end
+	table.insert( all_results, 1, results )
 	FileUtils.saveTable( all_results, "all_results.json" )
 
 
@@ -52,15 +67,10 @@ local function finalizeResults()
 	jsonResults.ended_at = results[#results].ended_at
 	jsonResults.notes = results[#results].notes 
 	jsonResults.rx = results[#results].rx 
-	jsonResults.tmp_id = results[#results].tmp_id 
-
-	if results[#results].workout_type == 'amrap' then
-		jsonResults.value = results[#results].total_rounds
-		jsonResults.unit = 'rounds'
-	else
-		jsonResults.value = results[#results].total_time
-		jsonResults.unit = 'ms'
-	end
+	jsonResults.tmp_id = results[#results].tmp_id
+	jsonResults.value = results[#results].value
+	jsonResults.sub_value = results[#results].sub_value
+	jsonResults.unit = results[#results].unit
 
 	jsonResults.segment_results = results
 
@@ -150,11 +160,14 @@ function scene:show( event )
 			})
 
 
-		local totalTime = string.format( "%02d", Clock.getMinutes( summaryData.total_time ) ) .. ':' .. string.format( "%02d", Clock.getSeconds( summaryData.total_time ) ) .. '.' .. string.format( "%02d", Clock.getHundredths( summaryData.total_time ) )
+		local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = summaryData.value, secs = true } )
+		if summaryData.workout_type == 'amrap' then 
+			totalTxt = "Rounds: " ..summaryData.value 
+		end
 
 		ui.totalDisp = display.newText({
 			parent 	= summaryGroup,
-			text 	= "Total Time: " .. totalTime,
+			text 	=  totalTxt,
 			x 		= Layout.workout_summary.totalX,
 			y 		= Layout.workout_summary.totalY,
 			font 	= 'Lato.ttf',
@@ -183,7 +196,7 @@ function scene:show( event )
 		ui.segResultsDisp = {}
 
 		for i=1, #results-1 do 
-			local formattedTime = Clock.humanizeTime( { time = results[i].value } )
+			local formattedTime = Clock.humanizeTime( { time = results[i].value, secs = true } )
 			
 			lbl = results[i].segment_content
 
@@ -228,6 +241,32 @@ function scene:show( event )
 			y 		= Layout.workout_summary.rxSwitchLabelY
 			})
 
+		local valuePrompt = "Additional Reps?"
+		if summaryData.workout_type == 'strength' then 
+			valuePrompt = "Max Weight Used"
+		end
+
+		ui.valueLabel = display.newText({
+			parent 	= group,
+			text 	= valuePrompt,
+			x 		= Layout.workout_summary.valueLabelX,
+			y 		= Layout.workout_summary.valueLabelY,
+			})
+
+		valueField = TextField:new({
+			parent 	= group,
+			x 		= Layout.workout_summary.valueFieldX,
+			y 		= Layout.workout_summary.valueFieldY,
+			width 	= 40,
+			height 	= 28,
+			cornerRadius 	= 4,
+			})
+
+		if not( summaryData.workout_type == 'amrap' or summaryData.workout_type == 'strength' ) then 
+			ui.valueLabel.isVisible = false
+			valueField.isVisible = false
+		end
+
 		ui.rxReminder = display.newText({
 			parent 	= group,
 			text 	= "\r\nNotes:",
@@ -259,9 +298,12 @@ function scene:hide( event )
 	if event.phase == "will" then
 		display.remove( summaryGroup )
 		display.remove( rxSwitch )
+		display.remove( valueField )
+		display.remove( ui.valueLabel )
 		display.remove( noteBox )
 		display.remove( ui.resultBox )
 		display.remove( ui.bg )
+		
 	end
 	
 end

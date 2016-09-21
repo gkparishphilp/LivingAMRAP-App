@@ -61,29 +61,9 @@ function scene:show( event )
 
 
 		local function getData( e )
-			data =  json.decode( e.response )
+			data = {}
 
-			if not( e.isError ) and not( data == nil ) then
-				connectionStatus = 'online'
-				ui.header:updateConnectionIndicator()
-				
-				for i = 1, #data do
-					-- Insert a row into the tableView
-					data_table:insertRow({
-						rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
-						params = { 
-							slug 			= data[i].tmp_id,
-							label			= data[i].label,
-							started_at 		= data[i].started_at,
-							value 			= data[i].value,
-							unit 			= data[i].unit,
-							sub_value 		= data[i].sub_value,
-							workout_type 	= data[i].workout_type,
-						}
-					})
-				end	
-
-			else
+			if e.isError then
 				connectionStatus = 'offline'
 				ui.header:updateConnectionIndicator()
 				--native.showAlert( 'Connection Error', e.response .. "\nUsing local data.", { 'Ok' } )
@@ -108,8 +88,29 @@ function scene:show( event )
 						}
 					})
 				end
+
+			else
+				connectionStatus = 'online'
+				ui.header:updateConnectionIndicator()
+				
+				data =  json.decode( e.response )
+
+				for i = 1, #data do
+					-- Insert a row into the tableView
+					data_table:insertRow({
+						rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
+						params = { 
+							slug 			= data[i].tmp_id,
+							label			= data[i].label,
+							started_at 		= data[i].started_at,
+							value 			= data[i].value,
+							unit 			= data[i].unit,
+							sub_value 		= data[i].sub_value,
+							workout_type 	= data[i].workout_type,
+						}
+					})
+				end	
 			end
-			
 			
 		end
 

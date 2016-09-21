@@ -422,25 +422,34 @@ function M:new( opts )
 		opts = opts or {}
 		local final = opts.final or false
 
+		local unit = 'secs'
+		if self.curSegment.segment_type == 'rest' then return end
+
 		if final then
+			local value = self.clock.elapsedTime / 1000
+			if self.data.workout_type == 'amrap' then 
+				value 	= self.totalRoundCount
+				unit 	= 'rds'
+			end
+
 			table.insert( self.results, { 
 				result_type 	= 'workout',
 				tmp_id 			= self.slug .. '_' .. osTime(),
 				workout_id		= self.slug,
-				total_rounds	= self.totalRoundCount,
-				total_time		= self.clock.elapsedTime,
+				total_time		= self.clock.elapsedTime / 1000,
 				started_at		= self.startedAt,
 				ended_at		= self.endedAt,
 				summary_title	= self.summaryTitle,
 				workout_type	= self.data.workout_type,
-				cover_img		= self.data.cover_img 
+				cover_img		= self.data.cover_img,
+				value 			= value,
+				unit 			= unit
 				})
 		else
-			local unit = 'ms'
-			local value = self.clock.elapsedTime - self.lastResultTime
+			
+			local value = ( self.clock.elapsedTime - self.lastResultTime ) / 1000
 			self.lastResultTime = self.clock.elapsedTime
-
-			if self.curSegment.segment_type == 'rest' then return end
+			
 			if value == 0 then return end
 
 			local content = self.curSegment.content
