@@ -28,8 +28,6 @@ local Debug = require( 'utilities.debug' )
 ---------------------------------------------------------------------------------
 
 local ui = {}
-local summaryGroup
-local summaryData
 local all_results, results, noteBox, rxSwitch, valueField
 
 
@@ -42,16 +40,16 @@ local function finalizeResults()
 	local jsonResults = {}
 	local unit = 'secs'
 
-	results[#results].notes = noteBox.textBox.text
-	results[#results].rx = tostring( rxSwitch.isOn )
-	results[#results].unit = unit
+	results.summary.notes = noteBox.textBox.text
+	results.summary.rx = tostring( rxSwitch.isOn )
+	results.summary.unit = unit
 
-	if summaryData.workout_type == 'amrap' then
-		results[#results].sub_value = valueField.textField.text
-		results[#results].unit = 'rds'
-	elseif summaryData.workout_type == 'strength' then 
-		results[#results].value = valueField.textField.text
-		results[#results].unit = 'lbs'
+	if results.summary.workout_type == 'amrap' then
+		results.summary.sub_value = valueField.textField.text
+		results.summary.unit = 'rds'
+	elseif results.summary.workout_type == 'strength' then 
+		results.summary.value = valueField.textField.text
+		results.summary.unit = 'lbs'
 	end
 
 	-- Only save last 5 results locally to device
@@ -61,20 +59,20 @@ local function finalizeResults()
 	table.insert( all_results, 1, results )
 	FileUtils.saveTable( all_results, "all_results.json" )
 
+	jsonResults = {
+		workout_id = results.summary.workout_id,
+		started_at = results.summary.started_at,
+		ended_at = results.summary.ended_at,
+		notes = results.summary.notes,
+		rx = results.summary.rx,
+		tmp_id = results.summary.tmp_id,
+		value = results.summary.value,
+		sub_value = results.summary.sub_value,
+		unit = results.summary.unit,
+		segment_results = results.segments
+	}
 
-	jsonResults.workout_id = results[#results].workout_id
-	jsonResults.started_at = results[#results].started_at
-	jsonResults.ended_at = results[#results].ended_at
-	jsonResults.notes = results[#results].notes 
-	jsonResults.rx = results[#results].rx 
-	jsonResults.tmp_id = results[#results].tmp_id
-	jsonResults.value = results[#results].value
-	jsonResults.sub_value = results[#results].sub_value
-	jsonResults.unit = results[#results].unit
-
-	jsonResults.segment_results = results
-
-	print( "Json Reuslts: " .. json.prettify( jsonResults ) )
+	print( "Json Reuslts for server: " .. json.prettify( jsonResults ) )
 
 	jsonResults = json.encode( jsonResults )
 
@@ -128,22 +126,20 @@ function scene:show( event )
 		all_results = all_results or {}
 
 		results = Composer.getVariable( 'workoutResults' )
-		
-		summaryGroup = display.newGroup()
-		group:insert( summaryGroup )
 
-		-- the last entry is the workout summary
-		summaryData = results[#results]
+		print( "results are:" )
+		Debug.printTable( results )
 
-		if summaryData.cover_img then 
+
+		if results.summary.cover_img then 
 			display.remove( ui.bg )
-			local name = summaryData.cover_img:match( "([^/]+)$" )
-			display.loadRemoteImage( summaryData.cover_img, 'GET', function(e) ui.bg = e.target;ui.bg.anchorY=0;group:insert( ui.bg );ui.bgDimmer=display.newRect( summaryGroup, Layout.centerX, 50, Layout.width, Layout.height );ui.bgDimmer.anchorY=0;ui.bgDimmer.fill={ 0, 0, 0, 0.5 };ui.bgDimmer:toBack(); ui.bg:toBack(); end, name, Layout.centerX, 50 )
+			local name = results.summary.cover_img:match( "([^/]+)$" )
+			display.loadRemoteImage( results.summary.cover_img, 'GET', function(e) ui.bg = e.target;ui.bg.anchorY=0;group:insert( ui.bg );ui.bgDimmer=display.newRect( group, Layout.centerX, 50, Layout.width, Layout.height );ui.bgDimmer.anchorY=0;ui.bgDimmer.fill={ 0, 0, 0, 0.5 };ui.bgDimmer:toBack(); ui.bg:toBack(); end, name, Layout.centerX, 50 )
 		end
 
 		ui.workoutTitle = display.newText({
-			parent 	= summaryGroup,
-			text 	= summaryData.summary_title,
+			parent 	= group,
+			text 	= results.summary.workout_title,
 			x 		= Layout.workout_summary.titleX,
 			y 		= Layout.workout_summary.titleY,
 			font 	= 'Lato-Bold.ttf',
@@ -151,8 +147,8 @@ function scene:show( event )
 			})
 
 		ui.dateDisp = display.newText({
-			parent 	= summaryGroup,
-			text 	= "Performed at: " .. summaryData.started_at,
+			parent 	= group,
+			text 	= "Performed at: " .. results.summary.started_at,
 			x 		= Layout.workout_summary.dateX,
 			y 		= Layout.workout_summary.dateY,
 			font 	= 'Lato.ttf',
@@ -160,13 +156,13 @@ function scene:show( event )
 			})
 
 
-		local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = summaryData.value, secs = true } )
-		if summaryData.workout_type == 'amrap' then 
-			totalTxt = "Rounds: " .. summaryData.value 
+		local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = results.summary.value, secs = true } )
+		if results.summary.workout_type == 'amrap' then 
+			totalTxt = "Rounds: " .. results.summary.value 
 		end
 
 		ui.totalDisp = display.newText({
-			parent 	= summaryGroup,
+			parent 	= group,
 			text 	=  totalTxt,
 			x 		= Layout.workout_summary.totalX,
 			y 		= Layout.workout_summary.totalY,
@@ -175,7 +171,7 @@ function scene:show( event )
 			})
 
 
-		ui.sep = display.newLine( summaryGroup, Layout.workout_summary.sepStartX, Layout.workout_summary.sepStartY, Layout.workout_summary.sepEndX, Layout.workout_summary.sepEndY )
+		ui.sep = display.newLine( group, Layout.workout_summary.sepStartX, Layout.workout_summary.sepStartY, Layout.workout_summary.sepEndX, Layout.workout_summary.sepEndY )
 		ui.sep.alpha = 0.5
 
 		ui.resultBox = Widget.newScrollView({
@@ -190,27 +186,49 @@ function scene:show( event )
 			})
 		group:insert( ui.resultBox )
 
+
+		ui.resultsBoxTitle = display.newText({
+			parent 	= group,
+			text 	= 'Segment Splits',
+			x 		= Layout.workout_summary.resultsBoxTitleX,
+			y 		= Layout.workout_summary.resultsBoxTitleY,
+			font 	= 'Lato.ttf',
+			fontSize = 18
+			})
+
 		local y = 0
 		local yPad = 28 
 
-		ui.segResultsDisp = {}
+		ui.segResultsContDisp = {}
+		ui.segResultsValDisp = {}
 
-		for i=1, #results-1 do 
-			local formattedTime = Clock.humanizeTime( { time = results[i].value, secs = true } )
+		for i=1, #results.segments do 
+			local formattedTime = Clock.humanizeTime( { time = results.segments[i].value, secs = true } )
 			
-			lbl = results[i].segment_content
-
-			ui.segResultsDisp[i] = display.newText({
-				parent 	= summaryGroup,
-				text 	= lbl .. ":  " .. formattedTime,
-				x 		= Layout.workout_summary.segResultsDispX,
+			ui.segResultsContDisp[i] = display.newText({
+				parent 	= group,
+				text 	= results.segments[i].content .. ":  ",
+				x 		= Layout.workout_summary.segResultsContDispX,
 				y 		= y,
 				font 	= 'Lato.ttf',
-				fontSize = 18
+				fontSize = 14
 				})
-			ui.segResultsDisp[i].anchorY = 0
-			ui.segResultsDisp[i].anchorX = 0
-			ui.resultBox:insert( ui.segResultsDisp[i] )
+			ui.segResultsContDisp[i].anchorY = 0
+			ui.segResultsContDisp[i].anchorX = 0
+			ui.resultBox:insert( ui.segResultsContDisp[i] )
+
+			ui.segResultsValDisp[i] = display.newText({
+				parent 	= group,
+				text 	= formattedTime,
+				x 		= Layout.workout_summary.segResultsValDispX,
+				y 		= y,
+				font 	= 'Lato.ttf',
+				fontSize = 14
+				})
+			ui.segResultsValDisp[i].anchorY = 0
+			ui.segResultsValDisp[i].anchorX = 1
+			ui.resultBox:insert( ui.segResultsValDisp[i] )
+
 			y = y + yPad
 		end
 
@@ -242,7 +260,7 @@ function scene:show( event )
 			})
 
 		local valuePrompt = "Additional Reps?"
-		if summaryData.workout_type == 'strength' then 
+		if results.summary.workout_type == 'strength' then 
 			valuePrompt = "Max Weight Used"
 		end
 
@@ -262,7 +280,7 @@ function scene:show( event )
 			cornerRadius 	= 4,
 			})
 
-		if not( summaryData.workout_type == 'amrap' or summaryData.workout_type == 'strength' ) then 
+		if not( results.summary.workout_type == 'amrap' or results.summary.workout_type == 'strength' ) then 
 			ui.valueLabel.isVisible = false
 			valueField.isVisible = false
 		end
@@ -296,8 +314,8 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
-		display.remove( summaryGroup )
 		display.remove( rxSwitch )
+		display.remove( ui.workoutTitle )
 		display.remove( valueField )
 		display.remove( ui.valueLabel )
 		display.remove( noteBox )

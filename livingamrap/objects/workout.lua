@@ -245,7 +245,7 @@ function M:new( opts )
 
 		self.curSegment.roundCount = self.curSegment.roundCount + 1
 		TextToSpeech.speak( self.curSegment.roundCount, { pitch = 0.9, volume = 0.98 } )
-		
+
 		self.totalRoundCount = self.totalRoundCount + 1
 
 		self:recordResults()
@@ -436,19 +436,18 @@ function M:new( opts )
 				unit 	= 'rds'
 			end
 
-			table.insert( self.results, { 
-				result_type 	= 'workout',
+			self.results.summary =  { 
 				tmp_id 			= self.slug .. '_' .. osTime(),
 				workout_id		= self.slug,
 				total_time		= self.clock.elapsedTime / 1000,
 				started_at		= self.startedAt,
 				ended_at		= self.endedAt,
-				summary_title	= self.summaryTitle,
+				workout_title	= self.title,
 				workout_type	= self.data.workout_type,
 				cover_img		= self.data.cover_img,
 				value 			= value,
 				unit 			= unit
-				})
+				}
 		else
 			
 			local value = ( self.clock.elapsedTime - self.lastResultTime ) / 1000
@@ -464,11 +463,11 @@ function M:new( opts )
 				content = "Round: " .. self.curSegment.cycleCount
 			end
 
-			table.insert( self.results, { 
-				result_type 	= 'segment',
+			if self.results.segments == nil then self.results.segments = {} end
+			table.insert( self.results.segments, { 
 				segment_id		= self.curSegment.id,
 				segment_type 	= self.curSegment.segment_type,
-				segment_content = content,
+				content 		= content,
 				value 			= value,
 				unit 			= unit,
 				recorded_at 	= osDate( "%Y-%m-%d %H:%M:%S" )
@@ -546,7 +545,7 @@ function M:new( opts )
 			end
 			workout.data = data
 			workout.header.title.text = workout.data.title
-			workout.summaryTitle = workout.data.title 
+			workout.title = workout.data.title 
 
 			table.sort( workout.data.segments, function(a,b) return a.seq < b.seq end )
 

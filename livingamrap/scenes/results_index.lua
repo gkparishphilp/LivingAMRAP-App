@@ -72,13 +72,14 @@ function scene:show( event )
 					data_table:insertRow({
 						rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
 						params = { 
-							slug 			= data[i].tmp_id,
-							label			= data[i].label,
-							started_at 		= data[i].started_at,
-							value 			= data[i].value,
-							unit 			= data[i].unit,
-							sub_value 		= data[i].sub_value,
-							workout_type 	= data[i].workout_type,
+							slug 			= data[i].summary.tmp_id,
+							label			= data[i].summary.workout_title,
+							started_at 		= data[i].summary.started_at,
+							value 			= data[i].summary.value,
+							rx 				= data[i].summary.rx,
+							unit 			= data[i].summary.unit,
+							sub_value 		= data[i].summary.sub_value,
+							workout_type 	= data[i].summary.workout_type,
 						}
 					})
 				end	
@@ -98,13 +99,14 @@ function scene:show( event )
 					data_table:insertRow({
 						rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
 						params = { 
-							slug 	= results[i][#results[i]].tmp_id,
-							label	= results[i][#results[i]].summary_title,
-							started_at = results[i][#results[i]].started_at,
-							value 		= results[i][#results[i]].value,
-							unit 		= results[i][#results[i]].unit,
-							sub_value  	= results[i][#results[i]].sub_value,
-							workout_type = results[i][#results[i]].workout_type,
+							slug 	= results[i].summary.tmp_id,
+							label	= results[i].summary.workout_title,
+							started_at = results[i].summary.started_at,
+							value 		= results[i].summary.value,
+							rx 			= results[i].summary.rx,
+							unit 		= results[i].summary.unit,
+							sub_value  	= results[i].summary.sub_value,
+							workout_type = results[i].summary.workout_type,
 						}
 					})
 				end
@@ -147,7 +149,6 @@ function scene:show( event )
 			rowStarted.anchorX, rowStarted.x  = 0, Layout.width*0.45
 			rowStarted.y = rowHeight * 0.5
 
-
 			local result
 
 			if row.params.workout_type == 'amrap' then 
@@ -167,7 +168,11 @@ function scene:show( event )
 			rowResult.anchorX, rowResult.x  = 0, Layout.width * 0.75
 			rowResult.y = rowHeight * 0.5
 
-			row.name = row.params.slug
+			if row.params.rx == 'true' then 
+				rowResult.text = rowResult.text .. ' Rx' 
+				rowResult.fill = Theme.colors.green
+			end
+
 		end
 
 		data_table = Widget.newTableView({

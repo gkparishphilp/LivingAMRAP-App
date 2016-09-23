@@ -154,12 +154,16 @@ local workoutSummary = {
 	sepEndX 		= width-25,
 	sepEndY  		= 145,
 
-	resultsBoxX 	= width * 0.5,
-	resultsBoxY 	= 160,
-	resultsBoxWidth = width - 25,
-	resultsBoxHeight = height - ( 160 + 220 ),
+	resultsBoxTitleX = width * 0.5,
+	resultsBoxTitleY = 160,
 
-	segResultsDispX = 20,
+	resultsBoxX 	= width * 0.5,
+	resultsBoxY 	= 175,
+	resultsBoxWidth = width - 25,
+	resultsBoxHeight = height - ( 175 + 220 ),
+
+	segResultsContDispX = 20,
+	segResultsValDispX = width-40,
 
 	rxSwitchX		= 20,
 	rxSwitchY		= height - 200,

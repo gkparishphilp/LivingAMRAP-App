@@ -59,8 +59,8 @@ function scene:show( event )
 		ui.workoutTitle = display.newText({
 			parent 	= group,
 			text 	= "Title",
-			x 		= Layout.centerX,
-			y 		= 80,
+			x 		= Layout.workout_summary.titleX,
+			y 		= Layout.workout_summary.titleY,
 			font 	= 'Lato-Bold.ttf',
 			fontSize 	= 24
 			})
@@ -68,8 +68,8 @@ function scene:show( event )
 		ui.dateDisp = display.newText({
 			parent 	= group,
 			text 	= "Performed at: ",
-			x 		= Layout.centerX,
-			y 		= 120,
+			x 		= Layout.workout_summary.dateX,
+			y 		= Layout.workout_summary.dateY,
 			font 	= 'Lato.ttf',
 			fontSize = 14
 			})
@@ -78,14 +78,58 @@ function scene:show( event )
 		ui.totalDisp = display.newText({
 			parent 	= group,
 			text 	= "Score: ",
-			x 		= Layout.centerX,
-			y 		= 180,
+			x 		= Layout.workout_summary.totalX,
+			y 		= Layout.workout_summary.totalY,
 			font 	= 'Lato.ttf',
 			fontSize = 20
 			})
 
-		ui.sep = display.newLine( group, 0, 200, Layout.width, 200 )
+		ui.sep = display.newLine( group, Layout.workout_summary.sepStartX, Layout.workout_summary.sepStartY, Layout.workout_summary.sepEndX, Layout.workout_summary.sepEndY )
 		ui.sep.alpha = 0.5
+
+
+		ui.resultsBoxTitle = display.newText({
+			parent 	= group,
+			text 	= 'Segment Splits',
+			x 		= Layout.workout_summary.resultsBoxTitleX,
+			y 		= Layout.workout_summary.resultsBoxTitleY,
+			font 	= 'Lato.ttf',
+			fontSize = 18
+			})
+
+
+		ui.resultBox = Widget.newScrollView({
+			top 		= Layout.workout_summary.resultsBoxY,
+			left		= 10,
+			width 		= Layout.workout_summary.resultsBoxWidth,
+			topPadding 	= 20,
+			bottomPadding = 20,
+			height 		= Layout.workout_summary.resultsBoxHeight,
+			horizontalScrollDisabled = true,
+			backgroundColor = { 0, 0, 0, 0.5 }
+			})
+		group:insert( ui.resultBox )
+
+
+
+		ui.notesTitle = display.newText({
+			parent 	= group,
+			text 	= "Notes:",
+			x 		= Layout.centerX,
+			y 		= Layout.workout_summary.rxReminderY,
+			font 	= 'Lato.ttf',
+			fontSize = 20
+			})
+
+		ui.notesDisp = display.newText({
+			parent 	= group,
+			text 	= "Notes:",
+			x 		= Layout.workout_summary.noteBoxX,
+			y 		= Layout.workout_summary.noteBoxY,
+			font 	= 'Lato.ttf',
+			fontSize = 18
+			})
+
 
 
 		local slug = Composer.getVariable( 'objSlug' )
@@ -109,23 +153,63 @@ function scene:show( event )
 					Debug.printTable( all_results[i] )
 
 					-- the last entry contains the summary data
-					if all_results[i][#all_results[i]].tmp_id == slug then 
+					if all_results[i].summary.tmp_id == slug then 
 						data = all_results[i]
 					end
 				end
 			end
 
-			ui.workoutTitle.text = data[#data].summary_title
-			ui.dateDisp.text = ui.dateDisp.text .. data[#data].started_at
+			ui.workoutTitle.text = data.summary.workout_title
+			ui.dateDisp.text = ui.dateDisp.text .. data.summary.started_at
 
-			local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = data[#data].value, secs = true } )
-			if data[#data].workout_type == 'amrap' then 
-				totalTxt = "Rounds: " .. data[#data].value 
-				if data[#data].sub_value then 
-					totalTxt = totalTxt .. ' & ' .. data[#data].sub_value .. ' reps'
+			local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = data.summary.value, secs = true } )
+			if data.summary.workout_type == 'amrap' then 
+				totalTxt = "Rounds: " .. data.summary.value 
+				if data.summary.sub_value then 
+					totalTxt = totalTxt .. ' & ' .. data.summary.sub_value .. ' reps'
 				end
 			end
 			ui.totalDisp.text = totalTxt
+
+
+			local y = 0
+			local yPad = 28 
+
+			ui.segResultsContDisp = {}
+			ui.segResultsValDisp = {}
+
+			for i=1, #data.segments do 
+				local formattedTime = Clock.humanizeTime( { time = data.segments[i].value, secs = true } )
+				
+				local content = data.segments[i].content or ""
+				ui.segResultsContDisp[i] = display.newText({
+					parent 	= group,
+					text 	= content .. ': ',
+					x 		= Layout.workout_summary.segResultsContDispX,
+					y 		= y,
+					font 	= 'Lato.ttf',
+					fontSize = 14
+					})
+				ui.segResultsContDisp[i].anchorY = 0
+				ui.segResultsContDisp[i].anchorX = 0
+				ui.resultBox:insert( ui.segResultsContDisp[i] )
+
+				ui.segResultsValDisp[i] = display.newText({
+					parent 	= group,
+					text 	= formattedTime,
+					x 		= Layout.workout_summary.segResultsValDispX,
+					y 		= y,
+					font 	= 'Lato.ttf',
+					fontSize = 14
+					})
+				ui.segResultsValDisp[i].anchorY = 0
+				ui.segResultsValDisp[i].anchorX = 1
+				ui.resultBox:insert( ui.segResultsValDisp[i] )
+
+				y = y + yPad
+			end
+
+			ui.notesDisp.text = data.summary.notes
 
 		end
 
