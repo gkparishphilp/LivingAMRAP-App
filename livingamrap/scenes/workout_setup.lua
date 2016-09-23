@@ -49,7 +49,7 @@ function scene:show( event )
 
 		ui.header = UI:setHeader({
 			parent 	= group,
-			title 	= 'Tools',
+			title 	= 'Quick Workout',
 			x 		= Layout.centerX,
 			y 		= 0,
 			width 	= Layout.width,
@@ -57,13 +57,19 @@ function scene:show( event )
 			backTo 	= Composer.getSceneName( 'previous' )
 			})
 
-		ui.btn1 = Btn:new({
-			parent 	= group,
-			y 		= 100,
-			label 	= "To DO",
+		ui.btns = {}
+		for i = 1, #Layout.workout_setup.buttons do 
+			ui[i] = Btn:new({
+				group 			= group,
+				label			= Layout.workout_setup.buttons[i].label,
+				x				= Layout.workout_setup.buttons[i].x,
+				y				= Layout.workout_setup.buttons[i].y,
+				width			= Layout.workout_setup.buttons[i].width,
+				height			= Layout.workout_setup.buttons[i].height,
+				fontSize		= Layout.workout_setup.buttons[i].fontSize,
+				onRelease 		= function() Composer.gotoScene( Layout.workout_setup.buttons[i].target ) end
 			})
-
-
+		end
 
 
 

@@ -8,6 +8,7 @@ local Theme = require( 'ui.theme' )
 local UI = require( 'ui.factory' )
 local Btn = require( 'ui.btn' )
 local json = require( 'json' )
+local TextToSpeech = require( 'plugin.texttospeech' )
 
 local Debug = require( 'utilities.debug' )
 
@@ -163,10 +164,11 @@ function M:new( opts )
 
 		local trxn = easing.outInExpo
 		if workout.countInCount > 0 then 
-			if settings.audio then audio.play( workout.audio.count ) end 
+			if settings.audio then TextToSpeech.speak( count, { pitch = 0.9, volume = 0.98 } ) end--audio.play( workout.audio.count ) end 
 			transition.to( countTxt, { size=500, time=900, transition=trxn, onComplete=function() display.remove( countTxt ) end } )
 		else
 			countTxt.text = 'Go!'
+			TextToSpeech.speak( 'Go!', { pitch = 0.9, volume = 0.98 } )
 			transition.to( countTxt, { size=300, time=300, onComplete = function() display.remove( countTxt ); workout:start() end } )	
 		end
 		workout.countInCount = workout.countInCount - 1 
@@ -242,6 +244,8 @@ function M:new( opts )
 		self.lastActionTime = self.clock.elapsedTime
 
 		self.curSegment.roundCount = self.curSegment.roundCount + 1
+		TextToSpeech.speak( self.curSegment.roundCount, { pitch = 0.9, volume = 0.98 } )
+		
 		self.totalRoundCount = self.totalRoundCount + 1
 
 		self:recordResults()
@@ -528,13 +532,17 @@ function M:new( opts )
 
 	function M:loadData( slug )
 		local function getData( e )
-			local data
-			if e.isError then
-				--native.showAlert( 'Connection Error', e.response .. "\nUsing local data.", { 'Ok' } )
+			connectionStatus = 'online'
+			workout.header:updateConnectionIndicator()
+
+			local data = json.decode( e.response )
+
+			if e.isError or data == nil then
+				connectionStatus = 'offline'
+				workout.header:updateConnectionIndicator()
+
 				local response = require( 'local_data.workouts.' .. workout.slug )
 				data = json.decode( response )
-			else
-				data =  json.decode( e.response )
 			end
 			workout.data = data
 			workout.header.title.text = workout.data.title

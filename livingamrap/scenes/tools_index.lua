@@ -52,23 +52,19 @@ function scene:show( event )
 			backTo 	= Composer.getSceneName( 'previous' )
 			})
 
-		ui.btn1 = Btn:new({
-			parent 	= group,
-			y 		= 100,
-			label 	= "% Max Calculator",
+		ui.btns = {}
+		for i = 1, #Layout.tools.buttons do 
+			ui[i] = Btn:new({
+				group 			= group,
+				label			= Layout.tools.buttons[i].label,
+				x				= Layout.tools.buttons[i].x,
+				y				= Layout.tools.buttons[i].y,
+				width			= Layout.tools.buttons[i].width,
+				height			= Layout.tools.buttons[i].height,
+				fontSize		= Layout.tools.buttons[i].fontSize,
+				onRelease 		= function() Composer.gotoScene( Layout.tools.buttons[i].target ) end
 			})
-
-		ui.btn2 = Btn:new({
-			parent 	= group,
-			y 		= 160,
-			label 	= "Max Rep Calculator",
-			})
-
-		ui.btn3 = Btn:new({
-			parent 	= group,
-			y 		= 220,
-			label 	= "Calorie Calculator",
-			})
+		end
 
 
 

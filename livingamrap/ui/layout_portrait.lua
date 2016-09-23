@@ -54,9 +54,84 @@ local home = {
 	}
 }
 
+local tools = {
+	buttons = {
+		{
+			label = '% Max Calculator',
+			target 	= 'scenes.home',
+			y 		= 100,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Max Rep Calculator',
+			target 	= 'scenes.home' ,
+			y 		= 160,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Calorie Calculator',
+			target 	= 'scenes.home' ,
+			y 		= 220,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Manual Entry',
+			target 	= 'scenes.home' ,
+			y 		= 280,
+			height 	= 36,
+			fontSize = 14,
+		}
+	}
+}
+
 local workoutsIndex = {
 	bgFill = { type = 'image', filename = 'assets/images/bgs/workouts_index_port.png' }
 }
+
+
+local workoutSetup = {
+	buttons = {
+		{
+			label = 'AMRAP',
+			target 	= 'scenes.home',
+			y 		= 100,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'For Time',
+			target 	= 'scenes.home' ,
+			y 		= 160,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Interval',
+			target 	= 'scenes.home' ,
+			y 		= 220,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Rounds for Time',
+			target 	= 'scenes.home' ,
+			y 		= 280,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'TABATA',
+			target 	= 'scenes.home' ,
+			y 		= 340,
+			height 	= 36,
+			fontSize = 14,
+		}
+	}
+}
+
 
 local workoutsShow = {
 	titleX 		= width * 0.5,
@@ -158,7 +233,9 @@ local L = {
 	dataTableHpad 	= 10,
 
 	home 	= home,
+	tools 	= tools,
 	workouts_index 	= workoutsIndex,
+	workout_setup 	= workoutSetup,
 	workouts_show 	= workoutsShow,
 	workout 		= workout,
 	workout_summary = workoutSummary,

@@ -12,10 +12,10 @@ settings =
 	},
 	plugins = 
 	{
-		["plugin.CoronaSplashControl"] =
-		{
-			publisherId = "com.coronalabs"
-		},
+		--["plugin.CoronaSplashControl"] =
+		--{
+		--	publisherId = "com.coronalabs"
+		--},
 		['plugin.texttospeech'] = 
 		{
 			publisherId = 'com.spiralcodestudio'

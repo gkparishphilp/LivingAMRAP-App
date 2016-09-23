@@ -141,11 +141,15 @@ function M:setHeader( opts )
 		onRelease 		= function() if Composer.getVariable( 'overlay' ) then transition.to( header.menu_btn.imageIcon, { rotation = 0 } ); Composer.hideOverlay( 'slideRight' ) else transition.to( header.menu_btn.imageIcon, { rotation = 90 } ); Composer.showOverlay( "scenes.menu_overlay", { effect='fromRight', time=800 } ) end end
 	})
 
-	header.connectionIndicator = display.newRoundedRect( header, opts.width - 50, opts.y + opts.height/2, 12, 12, 6 )
-	header.connectionIndicator.fill = { type='image', filename='assets/images/' .. connectionStatus .. '.png' }
+	header.connectionIndicator = display.newCircle( header, opts.width - 50, opts.y + opts.height/2, 6 )
+	header.connectionIndicator.fill = { 0.66, 0.66, 0.66 }
 
 	function header:updateConnectionIndicator()
-		self.connectionIndicator.fill = { type='image', filename='assets/images/' .. connectionStatus .. '.png' }
+		local fill = Theme.colors.dkRed
+		if connectionStatus == 'online' then 
+			fill = Theme.colors.green
+		end
+		self.connectionIndicator.fill = fill
 	end
 
 	

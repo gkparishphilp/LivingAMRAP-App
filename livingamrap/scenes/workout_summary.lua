@@ -162,7 +162,7 @@ function scene:show( event )
 
 		local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = summaryData.value, secs = true } )
 		if summaryData.workout_type == 'amrap' then 
-			totalTxt = "Rounds: " ..summaryData.value 
+			totalTxt = "Rounds: " .. summaryData.value 
 		end
 
 		ui.totalDisp = display.newText({

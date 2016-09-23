@@ -127,8 +127,8 @@ function scene:show( event )
 
 		local function onRowRender( e )
 
-			print( 'rendering row with prams:' )
-			Debug.printTable( e.row.params )
+			-- print( 'rendering row with prams:' )
+			-- Debug.printTable( e.row.params )
 
 			local row = e.row
 			-- Cache the row "contentWidth" and "contentHeight" because the row bounds can change as children objects are added

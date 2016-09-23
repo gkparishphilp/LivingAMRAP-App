@@ -15,6 +15,7 @@ local Theme = require( 'ui.theme' )
 local Colors = require( 'ui.colors' )
 local UI = require( 'ui.factory' )
 local json = require( 'json' )
+local TextToSpeech = require( 'plugin.texttospeech' )
 
 ---------------------------------------------------------------------------------
 -- BEGINNING OF YOUR IMPLEMENTATION
@@ -95,7 +96,7 @@ function scene:show( event )
 			label 	= "Ready! Ready!",
 			bgColor 	= Colors.green,
 			bgColorPressed 	= Colors.dkGreen,
-			onRelease 	= function() Composer.gotoScene( "scenes.workout_run" ) end
+			onRelease 	= function() TextToSpeech.speak( 'Ready. Ready.', { pitch = 0.9, volume = 0.98 } ); Composer.gotoScene( "scenes.workout_run", { effect='fade', time=1000 } ) end
 			})
 
 
@@ -103,16 +104,17 @@ function scene:show( event )
 		local slug = Composer.getVariable( 'objSlug' )
 		
 		local function getData( e )
-			if e.isError then
+			
+			connectionStatus = 'online'
+			ui.header:updateConnectionIndicator()
+			data =  json.decode( e.response )
+
+			if e.isError or data == nil then
 				connectionStatus = 'offline'
 				ui.header:updateConnectionIndicator()
 
 				local response = require( 'local_data.workouts.' .. slug )
 				data = json.decode( response )
-			else
-				connectionStatus = 'online'
-				ui.header:updateConnectionIndicator()
-				data =  json.decode( e.response )
 			end
 
 			ui.header.title.text = data.title
