@@ -20,7 +20,7 @@ local headerDefaults = {
 	backLabel 	= 'back',
 	backTo 		= 'scenes.home',
 	backBtn 	= true,
-	fontSize 	= 26,
+	fontSize 	= 24,
 	fontColor 	= { 0.95, 0.95, 0.95, 1 },
 	bgColor 	= Theme.colors.mdGrey,
 	btnColor 	= Theme.colors.green,
@@ -101,6 +101,13 @@ function M:setHeader( opts )
 		opts.group:insert( header )
 	elseif opts.parent then 
 		opts.parent:insert( header )
+	end
+
+	if display.topStatusBarContentHeight > 0 then
+		header.statusBarBg = display.newRect( header, 0, 0, display.contentWidth, display.topStatusBarContentHeight )
+		header.statusBarBg.anchorX, header.statusBarBg.anchorY = 0, 0
+		header.statusBarBg.fill = Theme.colors.ltGrey
+		opts.y = opts.y + display.topStatusBarContentHeight
 	end
 
 	header.bg = display.newRect( header, opts.x, opts.y, opts.width, opts.height )

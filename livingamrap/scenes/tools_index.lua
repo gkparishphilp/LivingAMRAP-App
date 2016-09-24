@@ -35,11 +35,10 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
+			height 		= Layout.height,
 			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fillScale 	= 1,
-			fill 		= { type = 'image', filename = 'assets/images/bgs/bg2.png' },
+			y 			= Layout.centerY,
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({

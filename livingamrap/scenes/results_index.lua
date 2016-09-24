@@ -44,10 +44,10 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fill 		= { 0 },
+			height 		= Layout.height,
+			x 			= Layout.centerX,
+			y 			= Layout.centerY,
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({
@@ -70,7 +70,7 @@ function scene:show( event )
 				for i = 1, #data do
 					-- Insert a row into the tableView
 					data_table:insertRow({
-						rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
+						rowColor = { default={ 0, 0.01}, over={ 0, 0.25} },
 						params = { 
 							slug 			= data[i].summary.tmp_id,
 							label			= data[i].summary.workout_title,
@@ -177,8 +177,8 @@ function scene:show( event )
 
 		data_table = Widget.newTableView({
 			left 			= Layout.dataTableHpad,
-			top 			= Layout.headerHeight,
-			height 			= Layout.height - Layout.headerHeight,
+			top 			= Layout.totalHeaderHeight,
+			height 			= Layout.height - Layout.totalHeaderHeight,
 			width 			= Layout.width - 2*Layout.dataTableHpad,
 			hideBackground  = true,
 			onRowRender 	= onRowRender,

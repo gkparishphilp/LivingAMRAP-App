@@ -107,7 +107,7 @@ function scene:show( event )
 
 		data_table = Widget.newTableView({
 			left 			= Layout.dataTableHpad,
-			top 			= Layout.headerHeight,
+			top 			= Layout.totalHeaderHeight,
 			height 			= Layout.height - Layout.headerHeight,
 			width 			= Layout.width - 2*Layout.dataTableHpad,
 			hideBackground  = true,

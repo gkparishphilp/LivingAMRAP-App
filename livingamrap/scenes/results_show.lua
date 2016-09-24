@@ -39,10 +39,10 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fill 		= { 0 },
+			height 		= Layout.height,
+			x 			= Layout.centerX,
+			y 			= Layout.centerY,
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({
@@ -65,16 +65,6 @@ function scene:show( event )
 			fontSize 	= 24
 			})
 
-		ui.dateDisp = display.newText({
-			parent 	= group,
-			text 	= "Performed at: ",
-			x 		= Layout.workout_summary.dateX,
-			y 		= Layout.workout_summary.dateY,
-			font 	= 'Lato.ttf',
-			fontSize = 14
-			})
-
-
 		ui.totalDisp = display.newText({
 			parent 	= group,
 			text 	= "Score: ",
@@ -83,6 +73,18 @@ function scene:show( event )
 			font 	= 'Lato.ttf',
 			fontSize = 20
 			})
+
+		ui.dateDisp = display.newText({
+			parent 	= group,
+			text 	= "Completed: ",
+			x 		= Layout.workout_summary.dateX,
+			y 		= Layout.workout_summary.dateY,
+			font 	= 'Lato.ttf',
+			fontSize = 14
+			})
+
+
+		
 
 		ui.sep = display.newLine( group, Layout.workout_summary.sepStartX, Layout.workout_summary.sepStartY, Layout.workout_summary.sepEndX, Layout.workout_summary.sepEndY )
 		ui.sep.alpha = 0.5
@@ -106,7 +108,7 @@ function scene:show( event )
 			bottomPadding = 20,
 			height 		= Layout.workout_summary.resultsBoxHeight,
 			horizontalScrollDisabled = true,
-			backgroundColor = { 0, 0, 0, 0.5 }
+			backgroundColor = { 0, 0.1 }
 			})
 		group:insert( ui.resultBox )
 
@@ -160,7 +162,7 @@ function scene:show( event )
 			end
 
 			ui.workoutTitle.text = data.summary.workout_title
-			ui.dateDisp.text = ui.dateDisp.text .. data.summary.started_at
+			ui.dateDisp.text = ui.dateDisp.text .. data.summary.ended_at
 
 			local totalTxt = "Total Time: " .. Clock.humanizeTime( { time = data.summary.value, secs = true } )
 			if data.summary.workout_type == 'amrap' then 

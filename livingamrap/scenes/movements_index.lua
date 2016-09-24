@@ -39,11 +39,10 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
+			height 		= Layout.height,
 			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fillScale 	= 1,
-			fill 		= { type = 'image', filename = 'assets/images/bgs/bg2.png' },
+			y 			= Layout.centerY,
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({
@@ -72,7 +71,7 @@ function scene:show( event )
 			for i = 1, #data do
 				-- Insert a row into the tableView
 				data_table:insertRow({
-					rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
+					rowColor = { default={ 0, 0.01}, over={0 ,0.25} },
 					params = { 
 						slug 	= data[i].slug,
 						label	= data[i].title 
@@ -108,9 +107,9 @@ function scene:show( event )
 
 		data_table = Widget.newTableView({
 			left 			= Layout.dataTableHpad,
-			top 			= Layout.headerHeight,
-			height 			= Layout.height - Layout.headerHeight,
-			width 			= Layout.width - 2*Layout.dataTableHpad,
+			top 			= Layout.totalHeaderHeight,
+			height 			= Layout.height - Layout.totalHeaderHeight,
+			width 			= Layout.width,
 			hideBackground  = true,
 			onRowRender 	= onRowRender,
 			onRowTouch 		= onRowTouch,

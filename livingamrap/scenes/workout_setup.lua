@@ -18,6 +18,7 @@ Widget.setTheme( "widget_theme_android_holo_dark" )
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
 local UI = require( 'ui.factory' )
+local Keypad = require( 'ui.keypad' )
 local json = require( 'json' )
 
 ---------------------------------------------------------------------------------
@@ -25,6 +26,20 @@ local json = require( 'json' )
 ---------------------------------------------------------------------------------
 
 local ui = {}
+
+local function switchListener( e )
+	local switch = e.target
+	if switch.id == 'tabata' and switch.isOn then
+		ui.userVal.isVisible = false
+	elseif switch.id == 'rft' and switch.isOn then 
+		ui.userVal.isVisible = true
+		ui.userVal.text = '0 Rounds'
+	else
+		ui.userVal.isVisible = true
+		ui.userVal.text = '0 mins'
+	end
+	print( "Switch with ID '"..switch.id.."' is: ".. tostring(switch.isOn) )
+end
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
@@ -40,11 +55,11 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
+			height 		= Layout.height * 3,
 			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
+			y 			= Layout.centerY,
 			fillScale 	= 1,
-			fill 		= { type = 'image', filename = 'assets/images/bgs/bg2.png' },
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({
@@ -57,22 +72,55 @@ function scene:show( event )
 			backTo 	= Composer.getSceneName( 'previous' )
 			})
 
-		ui.btns = {}
-		for i = 1, #Layout.workout_setup.buttons do 
-			ui[i] = Btn:new({
-				group 			= group,
-				label			= Layout.workout_setup.buttons[i].label,
-				x				= Layout.workout_setup.buttons[i].x,
-				y				= Layout.workout_setup.buttons[i].y,
-				width			= Layout.workout_setup.buttons[i].width,
-				height			= Layout.workout_setup.buttons[i].height,
-				fontSize		= Layout.workout_setup.buttons[i].fontSize,
-				onRelease 		= function() Composer.gotoScene( Layout.workout_setup.buttons[i].target ) end
+		ui.title = display.newText({
+			parent 		= group,
+			text 		= 'Workout Type:',
+			x 			= 20,
+			y 			= 100,
+			font 		= Theme.fonts.hairline,
+			fontSize 	= 24
 			})
+		ui.title.anchorX = 0
+
+		ui.switches = {}
+		local switchGroup = display.newGroup()
+		
+
+		for i = 1, #Layout.workout_setup.switches do 
+			ui.switches[i] = Widget.newSwitch({
+				group 		= switchGroup,
+				style		= 'radio',
+				id 			= Layout.workout_setup.switches[i].id,
+				left		= Layout.workout_setup.switches[i].x,
+				top			= Layout.workout_setup.switches[i].y,
+				initialSwitchState = Layout.workout_setup.switches[i].init,
+				onPress = switchListener
+			})
+
+			ui.switches[i].label = display.newText({
+				parent 	= switchGroup,
+				text 	= Layout.workout_setup.switches[i].label,
+				x 		= Layout.workout_setup.switches[i].x + 40,
+				y 		= Layout.workout_setup.switches[i].y + 17,
+				font 	= Theme.font,
+				fontSize = 16
+				})
+			ui.switches[i].label.anchorX = 0
 		end
+		group:insert( switchGroup )
 
+		ui.keypad = Keypad:new({
+			onComplete 	= function() ui.userVal.text = ui.keypad.value .. ' mins' end
+			})
 
-
+		ui.userVal = display.newText({
+			parent 	= group,
+			text 	= '0 mins',
+			x 		= display.contentCenterX,
+			y 		= display.contentCenterY + 50,
+			fontSize = 32,
+			})
+		ui.userVal:addEventListener( 'tap', function(e) ui.keypad:show() end )
 
 	end
 	
@@ -82,6 +130,10 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		display.remove( ui.keypad )
+		for i=1, #ui.switches do 
+			display.remove( ui.switches[i] )
+		end
 	end
 	
 end

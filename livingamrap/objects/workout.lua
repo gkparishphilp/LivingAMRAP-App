@@ -73,6 +73,11 @@ function M:new( opts )
 	-- this is portrait
 	-- ToDo Adjust layout for landscape
 
+	workout.bg = UI:setBg({
+		parent 	= workout,
+		fill 	= Theme.colors.coal
+		})
+
 	workout.header = UI:setHeader({
 			parent 	= workout,
 			title 	= 'A Workout',

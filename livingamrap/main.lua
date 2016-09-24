@@ -34,7 +34,7 @@ print( "Screen Width: " .. screenWidth )
 
 print( "Scale Factor: " .. display.pixelWidth / display.actualContentWidth )
 
-display.setStatusBar( display.HiddenStatusBar )
+display.setStatusBar( display.TranslucentStatusBar )
 
 -- handle android key events
 local function onKeyPress( event )

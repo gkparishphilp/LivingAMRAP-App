@@ -42,10 +42,10 @@ function scene:show( event )
 		ui.bg = UI:setBg({
 			parent 		= group,
 			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
+			height 		= Layout.height,
 			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fill 		= { 0 },
+			y 			= Layout.centerY,
+			fill 		= Theme.colors.coal,
 			})
 
 		ui.header = UI:setHeader({
@@ -62,18 +62,18 @@ function scene:show( event )
 		settings = settings or default_settings
 
 
-		ui.volumeLabel = display.newText( group, "Volume", 50, 80, 'Lato.ttf', 18 )
+		ui.volumeLabel = display.newText( group, "Volume", 50, 100, 'Lato.ttf', 18 )
 		ui.volumeLabel.anchorX, ui.volumeLabel.anchorY = 0, 0
 
 		volume_slider = Widget.newSlider({
 		    left 	= 150,
-		    top 	= 75,
+		    top 	= 95,
 		    width 	= 150,
 		    value 	= tonumber( settings.audioVolume ) * 100,
 		})
 		group:insert( volume_slider )
 
-		ui.countinLabel = display.newText( group, "Count In From", 50, 130, 'Lato.ttf', 18 )
+		ui.countinLabel = display.newText( group, "Count In From", 50, 150, 'Lato.ttf', 18 )
 		ui.countinLabel.anchorX, ui.countinLabel.anchorY = 0, 0
 
 		countin_field = TextField:new({
@@ -82,7 +82,7 @@ function scene:show( event )
 			width 		= 50,
 			height 		= 30,
 			x 			= 260,
-			y 			= 140,
+			y 			= 160,
 			text 		= settings.countIn
 			})
 

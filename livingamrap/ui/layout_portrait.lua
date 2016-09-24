@@ -5,40 +5,40 @@ local width = screenWidth
 local height = screenHeight
 
 local home = {
-	titleY = 40,
+	titleY = 50,
 	buttons = {
 		{
 			label = 'Workouts',
 			target 	= 'scenes.workouts_index',
-			y 		= 100,
+			y 		= 120,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Quick Workout',
 			target 	= 'scenes.workout_setup' ,
-			y 		= 160,
+			y 		= 180,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Movemements',
 			target 	= 'scenes.movements_index' ,
-			y 		= 220,
+			y 		= 240,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Tools',
 			target 	= 'scenes.tools_index' ,
-			y 		= 280,
+			y 		= 300,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Results',
 			target 	= 'scenes.results_index' ,
-			y 		= 340,
+			y 		= 360,
 			height 	= 36,
 			fontSize = 14,
 		},
@@ -46,7 +46,7 @@ local home = {
 		{
 			label = 'Settings',
 			target 	= 'scenes.settings' ,
-			y 		= 400,
+			y 		= 420,
 			height 	= 36,
 			fontSize = 14,
 		},
@@ -59,28 +59,28 @@ local tools = {
 		{
 			label = '% Max Calculator',
 			target 	= 'scenes.home',
-			y 		= 100,
+			y 		= 120,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Max Rep Calculator',
 			target 	= 'scenes.home' ,
-			y 		= 160,
+			y 		= 180,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Calorie Calculator',
 			target 	= 'scenes.home' ,
-			y 		= 220,
+			y 		= 240,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Manual Entry',
 			target 	= 'scenes.home' ,
-			y 		= 280,
+			y 		= 300,
 			height 	= 36,
 			fontSize = 14,
 		}
@@ -93,40 +93,41 @@ local workoutsIndex = {
 
 
 local workoutSetup = {
-	buttons = {
+	switches = {
 		{
-			label = 'AMRAP',
-			target 	= 'scenes.home',
-			y 		= 100,
-			height 	= 36,
+			label 	= 'AMRAP',
+			id 		= 'amrap',
+			y 		= 120,
+			x 	 	= 50,
+			init 	= 'true',
 			fontSize = 14,
 		},
 		{
-			label = 'For Time',
-			target 	= 'scenes.home' ,
-			y 		= 160,
-			height 	= 36,
+			label 	= 'For Time',
+			id 		= 'ft' ,
+			y 		= 150,
+			x 	 	= 50,
 			fontSize = 14,
 		},
 		{
 			label = 'Interval',
-			target 	= 'scenes.home' ,
-			y 		= 220,
-			height 	= 36,
+			id 		= 'emom' ,
+			y 		= 180,
+			x 	 	= 50,
 			fontSize = 14,
 		},
 		{
-			label = 'Rounds for Time',
-			target 	= 'scenes.home' ,
-			y 		= 280,
-			height 	= 36,
+			label 	= 'Rounds for Time',
+			id 		= 'rft' ,
+			y 		= 210,
+			x 	 	= 50,
 			fontSize = 14,
 		},
 		{
-			label = 'TABATA',
-			target 	= 'scenes.home' ,
-			y 		= 340,
-			height 	= 36,
+			label 	= 'TABATA',
+			id 		= 'tabata' ,
+			y 		= 240,
+			x 	 	= 50,
 			fontSize = 14,
 		}
 	}
@@ -144,23 +145,27 @@ local workoutsShow = {
 
 local workoutSummary = {
 	titleX			= width * 0.5,
-	titleY			= 70,
-	dateX			= width * 0.5,
-	dateY			= 100,
+	titleY			= 90,
+	
 	totalX			= width * 0.5,
-	totalY			= 130,
+	totalY			= 125,
+
+	dateX			= width * 0.5,
+	dateY			= 155,
+
+
 	sepStartX 		= 25,
-	sepStartY  		= 145,
+	sepStartY  		= 175,
 	sepEndX 		= width-25,
-	sepEndY  		= 145,
+	sepEndY  		= 175,
 
 	resultsBoxTitleX = width * 0.5,
-	resultsBoxTitleY = 160,
+	resultsBoxTitleY = 200,
 
 	resultsBoxX 	= width * 0.5,
-	resultsBoxY 	= 175,
+	resultsBoxY 	= 225,
 	resultsBoxWidth = width - 25,
-	resultsBoxHeight = height - ( 175 + 220 ),
+	resultsBoxHeight = height - ( 225 + 220 ),
 
 	segResultsContDispX = 20,
 	segResultsValDispX = width-40,
@@ -234,6 +239,7 @@ local L = {
 	centerY = height * 0.5,
 
 	headerHeight 	= 50,
+	totalHeaderHeight = 50 + display.topStatusBarContentHeight,
 	dataTableHpad 	= 10,
 
 	home 	= home,
