@@ -22,27 +22,26 @@ local home = {
 			fontSize = 14,
 		},
 		{
-			label = 'Movemements',
-			target 	= 'scenes.movements_index' ,
+			label = 'Manual Entry',
+			target 	= 'scenes.manual_entry' ,
 			y 		= 240,
-			height 	= 36,
-			fontSize = 14,
-		},
-		{
-			label = 'Tools',
-			target 	= 'scenes.tools_index' ,
-			y 		= 300,
 			height 	= 36,
 			fontSize = 14,
 		},
 		{
 			label = 'Results',
 			target 	= 'scenes.results_index' ,
+			y 		= 300,
+			height 	= 36,
+			fontSize = 14,
+		},
+		{
+			label = 'Tools',
+			target 	= 'scenes.tools_index' ,
 			y 		= 360,
 			height 	= 36,
 			fontSize = 14,
 		},
-
 		{
 			label = 'Settings',
 			target 	= 'scenes.settings' ,
@@ -58,7 +57,7 @@ local tools = {
 	buttons = {
 		{
 			label = '% Max Calculator',
-			target 	= 'scenes.home',
+			target 	= 'scenes.percent_calculator',
 			y 		= 120,
 			height 	= 36,
 			fontSize = 14,
@@ -78,8 +77,8 @@ local tools = {
 			fontSize = 14,
 		},
 		{
-			label = 'Manual Entry',
-			target 	= 'scenes.home' ,
+			label = 'Movements',
+			target 	= 'scenes.movements_index' ,
 			y 		= 300,
 			height 	= 36,
 			fontSize = 14,

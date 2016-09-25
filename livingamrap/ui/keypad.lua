@@ -10,6 +10,7 @@ M.defaults = {
 	width 			= 220,
 	height 			= 310,
 	cornerRadius 	= 8,
+	digits 			= 2,
 	onComplete = function() print( 'Keypad is done' ) end
 }
 
@@ -49,6 +50,10 @@ function M:new( opts )
 	keypad.bg:setStrokeColor( 0.5, 0.5, 0.5 )
 	keypad.bg.stroke = {type="image", filename="assets/images/brushes/brush1x2.png"}
 	keypad.bg.strokeWidth = 1
+
+	keypad.toggler = display.newRect( keypad, opts.x, opts.y+20, opts.width, 40 )
+	keypad.toggler.fill = { 0, 0.01 }
+	keypad.toggler:addEventListener( 'tap', function(e) keypad:show() end )
 
 
 	keypad.display = display.newText({
@@ -108,6 +113,8 @@ function M:new( opts )
 
 	function keypad:hide()
 		transition.to( self.parent, { y=0, time=1000 })
+		self.value = 0
+		self.display.text = self.value
 		self.state = 'locked'
 	end
 
@@ -129,8 +136,8 @@ function M:new( opts )
 			self.state = 'editing'
 		end
 		local tmp_str = self.value .. str
-		if string.len( tmp_str ) > 2 then
-			tmp_str = string.sub( tmp_str, -2 )
+		if string.len( tmp_str ) > opts.digits then
+			tmp_str = string.sub( tmp_str, -opts.digits )
 		end
 		self.value = tmp_str
 		self.display.text = self.value

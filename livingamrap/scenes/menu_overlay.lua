@@ -35,7 +35,7 @@ function scene:show( event )
 
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		panel.frame = display.newRoundedRect( group, Layout.width, 50, Layout.width * 0.66, 300, 6 )
+		panel.frame = display.newRoundedRect( group, Layout.width, 70, Layout.width * 0.66, 300, 6 )
 		panel.frame.anchorX, panel.frame.anchorY = 1, 0
 		panel.frame.fill = Theme.colors.whiteGrey
 
@@ -43,7 +43,7 @@ function scene:show( event )
 		panel.frame.strokeWidth = 6
 		panel.frame:setStrokeColor( 0.25, 0.25, 0.25, 0.5 )
 		
-		local y = 70
+		local y = 90
 
 		ui.home_link = display.newText({
 			parent 	= panel,
@@ -57,7 +57,7 @@ function scene:show( event )
 		ui.home_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -73,7 +73,7 @@ function scene:show( event )
 		ui.results_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -89,7 +89,7 @@ function scene:show( event )
 		ui.settings_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -105,7 +105,7 @@ function scene:show( event )
 		ui.workouts_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -121,7 +121,7 @@ function scene:show( event )
 		ui.movements_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
@@ -137,7 +137,7 @@ function scene:show( event )
 		ui.account_link.fill = Theme.colors.dkGrey
 
 		y = y + 20 
-		ui.sep = display.newLine( panel, Layout.width * 0.33 + 40, y, Layout.width-40, y )
+		ui.sep = display.newLine( panel, Layout.width * 0.33, y, Layout.width-40, y )
 		ui.sep:setStrokeColor( 0.33 )
 		y = y + 20 
 
