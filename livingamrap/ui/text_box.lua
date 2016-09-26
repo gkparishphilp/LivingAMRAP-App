@@ -96,10 +96,13 @@ function M:new( opts )
 	field.textBox.isEditable = true
 	field.textBox.text = opts.text
 
+
 	-- cache reference to the bg image so we can change color, highlight, etc. on focus
 	field.textBox.bg = field.bg
 
 	field.textBox.font = native.newFont( opts.font )
+
+	field.yDelta = centerY - ( field.textBox.y + field.textBox.height * 0.5 )
 
 	
 	-- if opts.fontSize then 
@@ -124,7 +127,9 @@ function M:new( opts )
 			e.target.bg:setStrokeColor( 118/255, 167/255, 215/255 )
 			e.target.bg.strokeWidth = 2
 
-			--native.setKeyboardFocus( e.target )
+			if field.yDelta < 0 then 
+				transition.to( e.target.parent, { y=e.target.parent.y + field.yDelta, time=1000, transition=easing.outElastic } )
+			end
 
 			if e.target.text == field.placeholder then 
 				e.target.text = ''
@@ -132,9 +137,14 @@ function M:new( opts )
 		end
 
 		if e.phase == 'ended' or e.phase == "submitted" then 
+
 			native.setKeyboardFocus( nil )
 
 			e.target.bg.strokeWidth = 0
+
+			if field.yDelta < 0 then 
+				transition.to( e.target.parent, { y=0, time=1000, transition=easing.outElastic } )
+			end
 
 			if e.target.text == nil or e.target.text == '' then 
 				if field.placeholder then

@@ -39,16 +39,17 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.home' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height,
-			x 			= Layout.centerX,
-			y 			= Layout.centerY,
-			fill 		= Theme.colors.coal,
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height,
+		-- 	x 			= Layout.centerX,
+		-- 	y 			= Layout.centerY,
+		-- 	fill 		= Theme.colors.coal,
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,

@@ -197,25 +197,25 @@ local workout = {
 	headerHeight 			= 50,
 
 	clockX 					= width * 0.5,
-	clockY 					= 62,
+	clockY 					= 85,
 	clockFontSize 			= width / 3,
 
 	infoDisplayX 			= 25,
-	infoDisplayY 			= 62 + ( width / 3 ) + 12,
+	infoDisplayY 			= 85 + ( width / 3 ) + 12,
 	infoDisplayFontSize 	= 32,
 	
 
 	segClockX 				= width - 25,
-	segClockY 				= 62 + ( width / 3 ) + 12,
+	segClockY 				= 85 + ( width / 3 ) + 12,
 	segClockFontSize 		= 30,
 
-	infoSepStartY	 		= 62 + ( width / 3 ) + 12 + 18,
-	infoSepEndY	 			= 62 + ( width / 3 ) + 12 + 18,
+	infoSepStartY	 		= 85 + ( width / 3 ) + 12 + 18,
+	infoSepEndY	 			= 85 + ( width / 3 ) + 12 + 18,
 	infoSepStartX			= 25,
 	infoSepEndX				= width - 25,
 
 
-	activeSegmentY 			= 62 + ( width / 3 ) + 12 + 32,
+	activeSegmentY 			= 85 + ( width / 3 ) + 12 + 32,
 
 
 	segmentsDisplayFontSize = 28,

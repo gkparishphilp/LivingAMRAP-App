@@ -33,17 +33,18 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.home' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY,
-			fillScale 	= 1,
-			fill 		= Layout.workouts_index.bgFill,
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height - Layout.headerHeight,
+		-- 	x 			= Layout.width * 0.5,
+		-- 	y 			= Layout.centerY,
+		-- 	fillScale 	= 1,
+		-- 	fill 		= Layout.workouts_index.bgFill,
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,
@@ -71,7 +72,7 @@ function scene:show( event )
 			for i = 1, #data do
 				-- Insert a row into the tableView
 				data_table:insertRow({
-					rowColor = { default={ 0, 0, 0, 0.5}, over={1, 0.5, 0 ,0.8} },
+					rowColor = { default={0, 0.1}, over={0 ,0.25} },
 					params = { 
 						slug 	= data[i].slug,
 						label	= data[i].title 
@@ -111,6 +112,7 @@ function scene:show( event )
 			height 			= Layout.height - Layout.headerHeight,
 			width 			= Layout.width - 2*Layout.dataTableHpad,
 			hideBackground  = true,
+			rowTouchDelay 	= 500,
 			onRowRender 	= onRowRender,
 			onRowTouch 		= onRowTouch,
 			listener 		= scrollListener

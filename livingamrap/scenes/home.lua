@@ -28,6 +28,7 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == 'will' then
+		Composer.setVariable( 'prevScene', nil )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
 		ui.bg = UI:setBg({
@@ -51,7 +52,7 @@ function scene:show( event )
 
 		ui.title1 = display.newText({
 			parent 	= group,
-			text 		= 'Living',
+			text 		= 'Live',
 			font 		= 'NothingYouCouldDo.ttf',
 			fontSize 	= 36,
 			x 			= Layout.centerX - 80,

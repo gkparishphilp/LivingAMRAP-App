@@ -35,17 +35,18 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.workouts_index' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY + Layout.headerHeight,
-			fillScale 	= 1,
-			fill 		= { type = 'image', filename = 'assets/images/bgs/bg3.png' },
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height - Layout.headerHeight,
+		-- 	x 			= Layout.width * 0.5,
+		-- 	y 			= Layout.centerY + Layout.headerHeight,
+		-- 	fillScale 	= 1,
+		-- 	fill 		= { type = 'image', filename = 'assets/images/bgs/bg3.png' },
+		-- 	})
 
 		ui.dimmer = display.newRect( group, Layout.centerX, Layout.centerY, Layout.width, Layout.height )
 		ui.dimmer.fill = { 0, 0, 0, 0.5 }

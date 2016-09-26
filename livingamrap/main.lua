@@ -25,6 +25,9 @@ default_settings = {
 }
 
 local Composer = require "composer"
+local Theme = require( 'ui.theme' )
+
+display.setDefault( 'background', unpack( Theme.colors.coal ) )
 
 print ( "Physical Device Width: " .. device.physicalW )
 print ( "Physical Device Height: " .. device.physicalH ) 
@@ -43,18 +46,15 @@ local function onKeyPress( event )
 	local key_name = event.keyName
 
 	-- nest these crazy ifs so we always return true s oAndroid doesn't grab the 'down' phase
-	if key_name == "back" then
-		if phase == 'up' then
-			if Composer.getVariable( 'overlay' ) then
-					Composer.hideOverlay( 'slideRight' )
+	if key_name == "back" and phase == 'up' then
+		if Composer.getVariable( 'overlay' ) then
+				Composer.hideOverlay( 'slideRight' )
+		else
+			if Composer.getVariable( 'prevScene' ) then
+				Composer.gotoScene( Composer.getVariable( 'prevScene' ) )
+				native.requestExit()
 			else
-				if Composer.getSceneName( 'current' ) == 'scenes.home' then
-					native.requestExit()
-				elseif ( Composer.getSceneName( 'previous' ) ) then
-					Composer.gotoScene( Composer.getSceneName( 'previous' ) )
-				else
-					native.requestExit()
-				end
+				native.requestExit()
 			end
 		end
 		return true

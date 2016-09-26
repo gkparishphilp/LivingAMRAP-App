@@ -31,6 +31,7 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.movements_index' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
 		ui.bg = UI:setBg({

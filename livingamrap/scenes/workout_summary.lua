@@ -102,15 +102,15 @@ function scene:show( event )
 
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height - Layout.headerHeight,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY,
-			fillScale 	= 1,
-			fill 		= { 0 },
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height - Layout.headerHeight,
+		-- 	x 			= Layout.width * 0.5,
+		-- 	y 			= Layout.centerY,
+		-- 	fillScale 	= 1,
+		-- 	fill 		= { 0 },
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,

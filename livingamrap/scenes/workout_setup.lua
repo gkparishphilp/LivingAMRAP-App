@@ -38,15 +38,18 @@ local function setUnit()
 	end
 	if id == 'tabata' or id == 'ft' then
 		ui.userVal.isVisible = false
+		ui.valUnits.isVisible = false
 	elseif id == 'rft' then 
 		ui.userVal.isVisible = true
+		ui.valUnits.isVisible = true
 		units = 'Rounds'
-		ui.userVal.text = '0' .. ' ' .. units
 	else
 		ui.userVal.isVisible = true
+		ui.valUnits.isVisible = true
 		units = 'Mins'
-		ui.userVal.text = '0' .. ' ' .. units
 	end
+	ui.userVal.text = '0'
+	ui.valUnits.text = units
 end
 
 -- Called when the scene's view does not exist:
@@ -58,17 +61,18 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.home' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height * 3,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY,
-			fillScale 	= 1,
-			fill 		= Theme.colors.coal,
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height * 3,
+		-- 	x 			= Layout.width * 0.5,
+		-- 	y 			= Layout.centerY,
+		-- 	fillScale 	= 1,
+		-- 	fill 		= Theme.colors.coal,
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,
@@ -118,18 +122,33 @@ function scene:show( event )
 		end
 		group:insert( switchGroup )
 
-		ui.keypad = Keypad:new({
-			onComplete 	= function() ui.userVal.text = ui.keypad.value  .. ' ' .. units end
-			})
 
 		ui.userVal = display.newText({
 			parent 	= group,
-			text 	= '0' .. ' ' .. units,
-			x 		= display.contentCenterX,
+			text 	= '0',
+			x 		= display.contentCenterX - 25,
 			y 		= display.contentCenterY + 50,
 			fontSize = 32,
 			})
 		ui.userVal:addEventListener( 'tap', function(e) ui.keypad:show() end )
+		ui.userVal.anchorX = 1
+
+		ui.valUnits = display.newText({
+			parent 	= group,
+			text 	= units,
+			x 		= display.contentCenterX,
+			y 		= display.contentCenterY + 50,
+			fontSize = 32,
+			})
+		ui.valUnits.anchorX = 0
+
+
+		ui.keypad = Keypad:new({
+			parent 		= group,
+			bindTo 		= ui.userVal
+			})
+
+		
 
 	end
 	

@@ -150,6 +150,8 @@ function M:new( opts )
 		field.textField:setTextColor( unpack( opts.textColor ) )
 	end
 
+	field.yDelta = centerY - ( field.textField.y + field.textField.height * 0.5 )
+
 	function field:setPlaceholder( text )
 		self.placeholder = text 
 		self.textField.text = text
@@ -161,7 +163,9 @@ function M:new( opts )
 			e.target.bg:setStrokeColor( 118/255, 167/255, 215/255 )
 			e.target.bg.strokeWidth = 2
 
-			--native.setKeyboardFocus( e.target )
+			if field.yDelta < 0 then 
+				transition.to( e.target.parent, { y=e.target.parent.y + field.yDelta, time=1000, transition=easing.outElastic } )
+			end
 
 			if e.target.text == field.placeholder then 
 				e.target.text = ''
@@ -172,6 +176,10 @@ function M:new( opts )
 			native.setKeyboardFocus( nil )
 
 			e.target.bg.strokeWidth = 0
+
+			if field.yDelta < 0 then 
+				transition.to( e.target.parent, { y=0, time=1000, transition=easing.outElastic } )
+			end
 
 			if e.target.text == nil or e.target.text == '' then 
 				if field.placeholder then

@@ -73,10 +73,6 @@ function M:new( opts )
 	-- this is portrait
 	-- ToDo Adjust layout for landscape
 
-	workout.bg = UI:setBg({
-		parent 	= workout,
-		fill 	= Theme.colors.coal
-		})
 
 	workout.header = UI:setHeader({
 			parent 	= workout,
@@ -92,6 +88,7 @@ function M:new( opts )
 		x 			= Layout.workout.clockX,
 		y 			= Layout.workout.clockY,
 		fontSize 	= Layout.workout.clockFontSize,
+		fontFill 	= Theme.colors.dkRed,
 		startAt 	= 0,
 		endAt 		= -1,
 		showHunds 	= true
@@ -226,6 +223,7 @@ function M:new( opts )
 		for i=1, #workout.audio do 
 			audio.dispose( workout.audio[i] )
 		end
+
 		display.remove( self )
 	end
 

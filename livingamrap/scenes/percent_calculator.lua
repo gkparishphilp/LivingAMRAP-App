@@ -27,8 +27,9 @@ local json = require( 'json' )
 
 local ui = {}
 
-local function setPercent()
-	
+local function calcPercent()
+	local percent = ( tonumber( ui.percentTxt.text ) / 100 ) * tonumber( ui.amountTxt.text )
+	ui.resultTxt.text = percent
 end
 
 -- Called when the scene's view does not exist:
@@ -40,17 +41,18 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.tools' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height * 3,
-			x 			= Layout.width * 0.5,
-			y 			= Layout.centerY,
-			fillScale 	= 1,
-			fill 		= Theme.colors.coal,
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height * 3,
+		-- 	x 			= Layout.width * 0.5,
+		-- 	y 			= Layout.centerY,
+		-- 	fillScale 	= 1,
+		-- 	fill 		= Theme.colors.coal,
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,
@@ -62,67 +64,53 @@ function scene:show( event )
 			backTo 	= Composer.getSceneName( 'previous' )
 			})
 
+
+		ui.percentTxt = display.newText({
+			parent 	= group,
+			text 	= '50',
+			x 		= Layout.centerX - 30,
+			y 		= 120,
+			font 	= Theme.font,
+			fontSize = 32,
+			})
+		ui.percentTxt.anchorX = 1
+		ui.percentTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=2 ui.keypad:show() end )
+
+		ui.percentLabel = display.newText({
+			parent 	= group,
+			text 	= "%  of",
+			Font 	= Theme.fonts.light,
+			x 		= Layout.centerX,
+			y 		= 120,
+			fontSize 	= 24
+			})
+
+		ui.amountTxt = display.newText({
+			parent 	= group,
+			text 	= '0',
+			x 		= Layout.centerX + 30,
+			y 		= 120,
+			font 	= Theme.font,
+			fontSize = 32
+			})
+		ui.amountTxt.anchorX = 0
+		ui.amountTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=3 ui.keypad:show() end )
+
+		ui.resultTxt = display.newText({
+			parent 	= group,
+			text 	= '0',
+			x 		= Layout.centerX,
+			y 		= 180,
+			font 	= Theme.font,
+			fontSize = 40
+			})
 		
 
 		ui.keypad = Keypad:new({
-			onComplete 	= function() ui.userVal.text = ui.keypad.value end
+			bindTo 		= ui.percentTxt,
+			onComplete = calcPercent
 			})
-
-		ui.userVal = display.newText({
-			parent 	= group,
-			text 	= '120',
-			x 		= display.contentCenterX * 0.33,
-			y 		= display.contentCenterY,
-			fontSize = 32,
-			})
-		ui.userVal:addEventListener( 'tap', function(e) ui.keypad:show() end )
-
-		-- Create two tables to hold data for days and years      
-		local days = {}
-		local years = {}
-
-		-- Populate the "days" table
-		for d = 1, 31 do
-		    days[d] = d
-		end
-
-		-- Populate the "years" table
-		for y = 1, 48 do
-		    years[y] = 1969 + y
-		end
-
-		-- Configure the picker wheel columns
-		local column_data = 
-		{
-		    -- Months
-		    { 
-		        align = "right",
-		        width = 140,
-		        startIndex = 5,
-		        labels = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }
-		    },
-		    -- Days
-		    {
-		        align = "center",
-		        width = 60,
-		        startIndex = 18,
-		        labels = days
-		    },
-		    -- Years
-		    {
-		        align = "center",
-		        width = 80,
-		        startIndex = 10,
-		        labels = years
-		    }
-		}
-		ui.picker = Widget.newPickerWheel({
-			parent 	= group,
-			x 		= display.contentCenterX * 1.5,
-			y 		= display.contentCenterY,
-			columns = column_data
-			})
-
+		
 	end
 	
 end

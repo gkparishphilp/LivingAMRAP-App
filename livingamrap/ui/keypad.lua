@@ -6,7 +6,7 @@ local M = {}
 
 M.defaults = {
 	x 				= display.contentCenterX,
-	y 				= display.contentHeight - 20,
+	y 				= display.contentHeight,
 	width 			= 220,
 	height 			= 310,
 	cornerRadius 	= 8,
@@ -28,16 +28,24 @@ function M:new( opts )
 
 	local keypad = display.newGroup()
 	if opts.group then
-		opts.group:insert( keypad )
-	elseif opts.parent then 
+		opts.parent = opts.group
+	end
+	if opts.parent then 
 		opts.parent:insert( keypad )
 	end
+	
 
 	if opts.onComplete and type( opts.onComplete ) == "function" then
 		keypad.onComplete = opts.onComplete
 	else 
 		keypad.onComplete = M.defaults.onComplete
 	end
+
+	if opts.bindTo then 
+		keypad.bindTo = opts.bindTo 
+	end
+
+	keypad.digits = opts.digits
 
 	keypad.state = 'initialized'
 	keypad.value = '0'
@@ -105,21 +113,20 @@ function M:new( opts )
 	x = x + ( opts.width * 0.33 )
 	keypad.btns['go'] = Btn:new({ parent=keypad, label = 'done', x = x, y = y, strokeWidth=1, strokeColor = Theme.colors.whiteGrey, bgColor={ 1, 0.1 }, bgColorPressed = { 1, 0.5 }, width=40, height=40, font = Theme.fonts.hairline, fontSize=12, onRelease=function() keypad:go() end })
 
-
 	function keypad:go()
 		self.onComplete()
 		self:hide()
 	end
 
 	function keypad:hide()
-		transition.to( self.parent, { y=0, time=1000 })
+		transition.to( self, { y=opts.y, time=1000 })
 		self.value = 0
 		self.display.text = self.value
 		self.state = 'locked'
 	end
 
 	function keypad:show()
-		transition.to( self.parent, { y= -self.bg.contentHeight+40, time=1000 })
+		transition.to( self, { y = -self.bg.contentHeight+33, time=1000, transition=easing.outElastic })
 		self.value = '0'
 		self.state = 'initialized'
 	end
@@ -136,11 +143,14 @@ function M:new( opts )
 			self.state = 'editing'
 		end
 		local tmp_str = self.value .. str
-		if string.len( tmp_str ) > opts.digits then
-			tmp_str = string.sub( tmp_str, -opts.digits )
+		if string.len( tmp_str ) > self.digits then
+			tmp_str = string.sub( tmp_str, -self.digits )
 		end
 		self.value = tmp_str
 		self.display.text = self.value
+		if self.bindTo then 
+			self.bindTo.text = self.value
+		end
 		self:dispatchEvent( { name = 'keyPress', target = self } )
 	end
 

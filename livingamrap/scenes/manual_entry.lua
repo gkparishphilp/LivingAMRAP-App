@@ -40,16 +40,17 @@ function scene:show( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		Composer.setVariable( 'prevScene', 'scenes.home' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		ui.bg = UI:setBg({
-			parent 		= group,
-			width 		= Layout.width,
-			height 		= Layout.height,
-			x 			= Layout.centerX,
-			y 			= Layout.centerY,
-			fill 		= Theme.colors.coal,
-			})
+		-- ui.bg = UI:setBg({
+		-- 	parent 		= group,
+		-- 	width 		= Layout.width,
+		-- 	height 		= Layout.height,
+		-- 	x 			= Layout.centerX,
+		-- 	y 			= Layout.centerY,
+		-- 	fill 		= Theme.colors.coal,
+		-- 	})
 
 		ui.header = UI:setHeader({
 			parent 	= group,
@@ -64,7 +65,7 @@ function scene:show( event )
 		ui.title = TextField:new({
 			parent 	= group,
 			x 		= Layout.centerX,
-			y 		= 120,
+			y 		= 420,
 			width 	= Layout.width - 80,
 			height 	= 40,
 			cornerRadius 	= 4
@@ -86,6 +87,9 @@ function scene:hide( event )
 	local group = self.view
 
 	if event.phase == "will" then
+		group.y = 0
+		display.remove( ui.title )
+		display.remove( ui.content )
 	end
 	
 end
