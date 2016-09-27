@@ -65,7 +65,7 @@ function scene:show( event )
 		ui.title = TextField:new({
 			parent 	= group,
 			x 		= Layout.centerX,
-			y 		= 420,
+			y 		= 115,
 			width 	= Layout.width - 80,
 			height 	= 40,
 			cornerRadius 	= 4
@@ -74,7 +74,7 @@ function scene:show( event )
 		ui.content = TextBox:new({
 			parent 	= group,
 			x 		= Layout.centerX,
-			y 		= Layout.centerY,
+			y 		= Layout.centerY - 20,
 			width 	= Layout.width - 80,
 			height 	= 200,
 			})

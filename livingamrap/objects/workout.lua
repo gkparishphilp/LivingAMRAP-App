@@ -534,12 +534,16 @@ function M:new( opts )
 
 	function M:loadData( slug )
 		local function getData( e )
+
 			connectionStatus = 'online'
 			workout.header:updateConnectionIndicator()
 
 			local data = json.decode( e.response )
 
-			if e.isError or data == nil then
+			if workout.slug == 'quickWorkout' then 
+				data = Composer.getVariable( 'workoutData' )
+
+			elseif e.isError or data == nil then
 				connectionStatus = 'offline'
 				workout.header:updateConnectionIndicator()
 
@@ -576,6 +580,7 @@ function M:new( opts )
 
 		local url = 'http://localhost:3003/workouts/' .. workout.slug .. '.json'
 		network.request( url, 'GET', getData )
+
 	end
 
 	self:loadData( slug )

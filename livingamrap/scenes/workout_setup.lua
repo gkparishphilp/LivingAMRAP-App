@@ -19,6 +19,7 @@ local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
 local UI = require( 'ui.factory' )
 local Keypad = require( 'ui.keypad' )
+local TextBox = require( 'ui.text_box' )
 local json = require( 'json' )
 
 local units = 'Mins'
@@ -28,29 +29,7 @@ local units = 'Mins'
 
 local ui = {}
 
-local function setUnit()
-	local id
-	for i=1, #ui.switches do 
-		if ui.switches[i].isOn then 
-			id = ui.switches[i].id 
-			break
-		end
-	end
-	if id == 'tabata' or id == 'ft' then
-		ui.userVal.isVisible = false
-		ui.valUnits.isVisible = false
-	elseif id == 'rft' then 
-		ui.userVal.isVisible = true
-		ui.valUnits.isVisible = true
-		units = 'Rounds'
-	else
-		ui.userVal.isVisible = true
-		ui.valUnits.isVisible = true
-		units = 'Mins'
-	end
-	ui.userVal.text = '0'
-	ui.valUnits.text = units
-end
+local workout_type = 'amrap'
 
 -- Called when the scene's view does not exist:
 function scene:create( event )
@@ -64,15 +43,82 @@ function scene:show( event )
 		Composer.setVariable( 'prevScene', 'scenes.home' )
 		local Layout = require( 'ui.layout_' .. screenOrient )
 
-		-- ui.bg = UI:setBg({
-		-- 	parent 		= group,
-		-- 	width 		= Layout.width,
-		-- 	height 		= Layout.height * 3,
-		-- 	x 			= Layout.width * 0.5,
-		-- 	y 			= Layout.centerY,
-		-- 	fillScale 	= 1,
-		-- 	fill 		= Theme.colors.coal,
-		-- 	})
+		local function centerDisplay()
+			local width = ui.userVal.contentWidth + ui.valUnits.contentWidth + 10
+			ui.userVal.anchorX = 0
+			ui.valUnits.anchorX = 0
+			ui.userVal.x = display.contentWidth * 0.5 - ( width * 0.5 )
+			ui.valUnits.x = ui.userVal.x + ui.userVal.contentWidth + 10
+			ui.box.x = ui.userVal.x + ( ui.userVal.contentWidth/2 )
+			ui.box.width = ui.userVal.contentWidth + 8 
+		end
+
+		local function go()
+			local title = "Quick "
+			local repeat_count = 0 
+			local duration = 0
+			if workout_type == 'amrap' then
+				title = title .. 'AMRAP'
+				duration = tonumber( ui.userVal.text ) * 60
+			elseif workout_type == 'ft' then 
+				title = title .. 'Workout for Time'
+			elseif workout_type == 'rft' then 
+				title = title .. 'RFT'
+				repeat_count = tonumber( ui.userVal.text )
+			elseif workout_type == 'tabata' then 
+				title = title .. 'TABATA'
+			end
+			local workoutData = {
+				title 			= title, 
+				workout_type 	= workout_type
+			}
+			workoutData.segments = {
+				{
+					segment_type	 = workout_type,
+					duration 		= duration,
+					repeat_count 	= repeat_count,
+					content 		= ui.descriptionBox.textBox.text
+				}
+			}
+
+			Composer.setVariable( 'objType', 'workout' )
+			Composer.setVariable( 'objSlug', 'quickWorkout' )
+
+			Composer.setVariable( 'workoutData', workoutData )
+
+			Composer.gotoScene( "scenes.workout_run", { effect='fade', time=1000 } )
+
+		end
+
+		local function setUnit()
+			for i=1, #ui.switches do 
+				if ui.switches[i].isOn then 
+					workout_type = ui.switches[i].id 
+					break
+				end
+			end
+			if workout_type == 'tabata' or workout_type == 'ft' then
+				ui.userVal.isVisible = false
+				ui.valUnits.isVisible = false
+				ui.box.isVisible = false
+			elseif workout_type == 'rft' then 
+				ui.userVal.isVisible = true
+				ui.valUnits.isVisible = true
+				ui.box.isVisible = true
+				units = 'Rounds'
+				ui.keypad.label = units
+			else
+				ui.userVal.isVisible = true
+				ui.valUnits.isVisible = true
+				ui.box.isVisible = true
+				units = 'Mins'
+				ui.keypad.label = units
+			end
+			ui.userVal.text = '0'
+			ui.valUnits.text = units
+			centerDisplay()
+			ui.keypad:updateDisp()
+		end
 
 		ui.header = UI:setHeader({
 			parent 	= group,
@@ -122,32 +168,86 @@ function scene:show( event )
 		end
 		group:insert( switchGroup )
 
+		ui.valTitleTxt = display.newText({
+			parent 		= group,
+			text 		= 'Duration:',
+			x 			= 20,
+			y 			= ui.switches[#ui.switches].y + 30,
+			font 		= Theme.fonts.hairline,
+			fontSize 	= 24
+			})
+		ui.valTitleTxt.anchorX = 0
+
 
 		ui.userVal = display.newText({
 			parent 	= group,
 			text 	= '0',
 			x 		= display.contentCenterX - 25,
-			y 		= display.contentCenterY + 50,
+			y 		= ui.valTitleTxt.y + 50,
 			fontSize = 32,
 			})
-		ui.userVal:addEventListener( 'tap', function(e) ui.keypad:show() end )
+		ui.userVal:addEventListener( 'tap', function(e) ui.descriptionBox.textBox.isVisible=false; ui.descriptionBox.isVisible=false; ui.keypad:show() end )
 		ui.userVal.anchorX = 1
+
+		ui.box = display.newRoundedRect( group, ui.userVal.x, ui.userVal.y, ui.userVal.contentWidth*2, ui.userVal.contentHeight+8, 4 )
+		ui.box.fill = Theme.colors.dkGrey
+		ui.box.strokeWidth = 2
+		ui.box:setStrokeColor( unpack( Theme.colors.ltGrey ) )
+		ui.box:toBack()
+		ui.box:addEventListener( 'tap', function(e) ui.descriptionBox.textBox.isVisible=false; ui.descriptionBox.isVisible=false; ui.keypad:show() end )
 
 		ui.valUnits = display.newText({
 			parent 	= group,
 			text 	= units,
 			x 		= display.contentCenterX,
-			y 		= display.contentCenterY + 50,
+			y 		= ui.userVal.y,
 			fontSize = 32,
 			})
+		ui.valUnits:addEventListener( 'tap', function(e) ui.descriptionBox.textBox.isVisible=false; ui.descriptionBox.isVisible=false; ui.keypad:show() end )
 		ui.valUnits.anchorX = 0
 
+		centerDisplay()
+
+
+		ui.descTitleTxt = display.newText({
+			parent 		= group,
+			text 		= 'Description:',
+			x 			= 20,
+			y 			= ui.valUnits.y + 50,
+			font 		= Theme.fonts.hairline,
+			fontSize 	= 24
+			})
+		ui.descTitleTxt.anchorX = 0
+
+		ui.descriptionBox = TextBox:new({
+			parent 	= group,
+			x 		= Layout.centerX,
+			y 		= ui.descTitleTxt.y + 70,
+			width 	= Layout.width - 80,
+			height 	= 80,
+			})
+
+
+
+		ui.go_btn = Btn:new({
+			group 	= group,
+			x 		= Layout.workouts_show.goBtnX,
+			y 		= Layout.workouts_show.goBtnY,
+			width 	= Layout.workouts_show.goBtnWidth,
+			height 	= Layout.workouts_show.goBtnHeight,
+			fontSize 	= 20,
+			label 	= "Ready! Ready!",
+			bgColor 	= Theme.colors.dkGreen,
+			bgColorPressed 	= Theme.colors.green,
+			onRelease 	= go
+			})
 
 		ui.keypad = Keypad:new({
 			parent 		= group,
-			bindTo 		= ui.userVal
+			bindTo 		= ui.userVal,
+			onComplete 	= function() ui.descriptionBox.isVisible=true; ui.descriptionBox.textBox.isVisible=true; end
 			})
-
+		ui.keypad:addEventListener( 'keyPress', centerDisplay )
 		
 
 	end
@@ -162,6 +262,11 @@ function scene:hide( event )
 		for i=1, #ui.switches do 
 			display.remove( ui.switches[i] )
 		end
+		display.remove( ui.userVal )
+		display.remove( ui.valUnits )
+		display.remove( ui.box )
+
+		display.remove( ui.descriptionBox )
 	end
 	
 end

@@ -321,6 +321,7 @@ function scene:hide( event )
 		display.remove( noteBox )
 		display.remove( ui.resultBox )
 		display.remove( ui.bg )
+		display.remove( ui.totalDisp )
 		
 	end
 	

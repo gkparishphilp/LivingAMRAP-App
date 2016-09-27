@@ -226,6 +226,10 @@ function scene:hide( event )
 
 	if event.phase == "will" then
 		display.remove( ui.workoutTitle )
+		display.remove( ui.totalDisp )
+		display.remove( ui.dateDisp )
+		display.remove( ui.resultBox )
+		display.remove( ui.notesDisp )
 		display.remove( ui.bg )
 	end
 	

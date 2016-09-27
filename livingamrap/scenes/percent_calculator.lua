@@ -74,7 +74,7 @@ function scene:show( event )
 			fontSize = 32,
 			})
 		ui.percentTxt.anchorX = 1
-		ui.percentTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=2 ui.keypad:show() end )
+		ui.percentTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=2; ui.keypad.label = "%"; ui.keypad:show() end )
 
 		ui.percentLabel = display.newText({
 			parent 	= group,
@@ -94,7 +94,7 @@ function scene:show( event )
 			fontSize = 32
 			})
 		ui.amountTxt.anchorX = 0
-		ui.amountTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=3 ui.keypad:show() end )
+		ui.amountTxt:addEventListener( 'tap', function(e) ui.keypad.bindTo=e.target; ui.keypad.digits=3; ui.keypad.label=''; ui.keypad:show() end )
 
 		ui.resultTxt = display.newText({
 			parent 	= group,
@@ -120,6 +120,9 @@ function scene:hide( event )
 
 	if event.phase == "will" then
 		display.remove( ui.keypad )
+		display.remove( ui.percentTxt )
+		display.remove( ui.amountTxt )
+		display.remove( ui.resultTxt )
 	end
 	
 end

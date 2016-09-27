@@ -109,26 +109,26 @@ local workoutSetup = {
 			fontSize = 14,
 		},
 		{
-			label = 'Interval',
-			id 		= 'emom' ,
-			y 		= 180,
-			x 	 	= 50,
-			fontSize = 14,
-		},
-		{
 			label 	= 'Rounds for Time',
 			id 		= 'rft' ,
-			y 		= 210,
+			y 		= 180,
 			x 	 	= 50,
 			fontSize = 14,
 		},
 		{
 			label 	= 'TABATA',
 			id 		= 'tabata' ,
-			y 		= 240,
+			y 		= 210,
 			x 	 	= 50,
 			fontSize = 14,
-		}
+		},
+		-- {
+		-- 	label = 'Interval',
+		-- 	id 		= 'emom' ,
+		-- 	y 		= 180,
+		-- 	x 	 	= 50,
+		-- 	fontSize = 14,
+		-- },
 	}
 }
 
@@ -139,7 +139,7 @@ local workoutsShow = {
 	overviewX 	= width * 0.5,
 	overviewY 	= 100,
 	goBtnX 		= width * 0.5,
-	goBtnY 		= height - 70
+	goBtnY 		= height - 50
 }
 
 local workoutSummary = {

@@ -206,6 +206,8 @@ function M:new( opts )
 		if event.phase == 'ended' then 
 			btn.onRelease()
 		end
+		-- don't propagate button touches
+		return true
 	end
 	btn:addEventListener( 'touch', btn )
 	return btn

@@ -12,7 +12,6 @@ Widget.setTheme( "widget_theme_android_holo_dark" )
 
 local Btn = require( 'ui.btn' )
 local Theme = require( 'ui.theme' )
-local Colors = require( 'ui.colors' )
 local UI = require( 'ui.factory' )
 local json = require( 'json' )
 local TextToSpeech = require( 'plugin.texttospeech' )
@@ -95,8 +94,8 @@ function scene:show( event )
 			height 	= Layout.workouts_show.goBtnHeight,
 			fontSize 	= 20,
 			label 	= "Ready! Ready!",
-			bgColor 	= Colors.green,
-			bgColorPressed 	= Colors.dkGreen,
+			bgColor 	= Theme.colors.dkGreen,
+			bgColorPressed 	= Theme.colors.green,
 			onRelease 	= function() TextToSpeech.speak( 'Ready. Ready.', { pitch = 0.9, volume = 0.98 } ); Composer.gotoScene( "scenes.workout_run", { effect='fade', time=1000 } ) end
 			})
 
