@@ -52,7 +52,6 @@ local function onKeyPress( event )
 		else
 			if Composer.getVariable( 'prevScene' ) then
 				Composer.gotoScene( Composer.getVariable( 'prevScene' ) )
-				native.requestExit()
 			else
 				native.requestExit()
 			end
